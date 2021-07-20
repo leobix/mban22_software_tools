@@ -20,7 +20,7 @@
    - Machine learning with Pyomo, robust regression, sparse regression
 
 
-## Instructions for Part 1
+## Instructions for Part 1: Python Installation
 ### Remark: there exists several ways to download and install Python. We propose one simple way but don't worry if you have Python installed differently or if you are using another version, like 3.7.
 
 - Please navigate to https://www.anaconda.com/download/ and download Python 3.8 version of Anaconda. 
