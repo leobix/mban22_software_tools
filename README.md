@@ -1,5 +1,3 @@
-# mban22_software_tools
-
 # 15.003 Analytics Tools
 
 ## Class Syllabus
