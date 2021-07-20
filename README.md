@@ -34,9 +34,9 @@
 <br />
 
 
-Please email me at leobix@mit.edu if you have any questions!
+Please email leobix@mit.edu if you have any questions!
 
-Leonard
+Holly, Kim, Ted and Leonard
 
 <br />
 
