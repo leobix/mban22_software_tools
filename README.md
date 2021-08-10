@@ -27,6 +27,8 @@
 - If you see a Jupyter screen in your browser, you have succeeded!
 - Another way to open Jupyter notebooks is to write in your terminal ```jupyter notebook``` which should open Jupyter.
 
+### You can now navigate to ```intro_to_python``` and check the notebooks of your choice depending on your Python level. It is possible you already know everything within these notebooks. In this case, either be patient for the SIP classes in October or ask your Instructors for cool Python stuff they wish they knew earlier ;)
+
 
 <br />
 
