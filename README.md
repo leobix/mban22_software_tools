@@ -13,18 +13,7 @@
    - How do I make my code run faster? – vectorized functions
    - Data frames, I/O, visualization
 
-### SIP: The basics of Machine Learning
-
-1. __Scikit Learn__
-   - Linear regression
-   - Logistic regression
-   - Decision Trees, Random forests, Boosting
-   - Multi-layer perceptrons
-   - Cross validation, model selection
-   
-1. __Optimization with Pyomo__
-   - Writing and solving an optimization program
-   - Machine learning with Pyomo, robust regression, sparse regression
+### SIP: The basics of Machine Learning and introduction to Neural Networks
 
 ### IAP: Introduction to Deep Learning
 
