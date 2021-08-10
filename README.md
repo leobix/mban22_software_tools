@@ -1,4 +1,4 @@
-# 15.003 Analytics Tools
+# 15.003 Analytics Tools | Python
 
 ## Class Syllabus
 
