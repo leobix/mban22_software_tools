@@ -29,13 +29,14 @@
 ### IAP: Introduction to Deep Learning
 
 
-## Instructions for Part 1: Python Installation
+## Instructions for the Python Installation
 ### Remark: there exists several ways to download and install Python. We propose one simple way but don't worry if you have Python installed differently or if you are using another version, like 3.7.
 
 - Please navigate to https://www.anaconda.com/download/ and download Python 3.8 version of Anaconda. 
 - After installation, open Anaconda and launch Jupyter notebook 5.0.0 or above.
 - Either a browser should open automatically, or a terminal will open. Follow the instructions on the terminal. 
-- If you see a Jupyter screen in your browser, you have completed the pre-assignment!
+- If you see a Jupyter screen in your browser, you have succeeded!
+- Another way to open Jupyter notebooks is to write in your terminal ```jupyter notebook``` which should open Jupyter.
 
 
 <br />
