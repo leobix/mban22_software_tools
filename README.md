@@ -33,7 +33,7 @@
 <br />
 
 
-Please email leobix@mit.edu if you have any questions!
+In any case, please email leobix@mit.edu if you have any questions!
 
 Holly, Kim, Ted and Leonard
 
