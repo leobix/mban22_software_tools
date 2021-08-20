@@ -176,64 +176,36 @@ If you see this output, everything is working correctly. If you see errors, one 
 
 How can we manage complex, code-based workflows? How can we reliably share code between collaborators without syncing issues? How can we track multiple versions of scripts without going crazy? There are multiple solutions to these problems, but *version control* with git is by far the most common. 
 
-<!-- ## Install git
+## Install Git
 
-Get started by installing Git. You can follow the relevant instructions for your operating system [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git). For Windows 10 users, we suggest installing and interacting with git either via the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) or via the [GitHub Desktop Client](https://desktop.github.com).
- -->
-## Make an Account on GitHub.com
+We will be using the command-line interface to Git. First of all check if you already have git installed (in which case you can skip this step). **Windows** users should look for Git Bash while **macOS** and **Linux** users should open a terminal and try running the command: `git`
+
+If you don't have git installed, go to the [Git project page](https://www.git-scm.com/) and follow the link on the right side to download the installer for your operating system. Follow the instructions in the README file in the downloaded .zip or .dmg.
+
+**Windows**: During the installation, select to use Git from the Windows command prompt, checkout Windows-style, commit UNIX-style line endings, and add a shortcut to the Desktop for easy access.
+
+**macOS**: if you receive an “unidentified developer” warning, right-click the .pkg file, select Open, then click Open.
+
+
+## Connect to GitHub.com
 
 [GitHub](https://github.com/) is a hosting service for git that makes it easy to share your code. 
 
-Sign up for an account -- remember to keep track of your username and password. Feel free to enter information about yourself and optionally a profile picture. 
+Visit github.mit.edu and log in.
 
-## Install GitHub Desktop
+1. Sign up for an account -- remember to keep track of your username and password. Feel free to enter information about yourself and optionally a profile picture. 
 
-Download GitHub Desktop [here](https://desktop.github.com), and follow the installation directions. 
+2. From the menu at the top right corner of the page, go to Settings, and select [SSH and GPG keys](https://github.mit.edu/settings/keys).
 
-During setup, you will be prompted to enter your username and password from GitHub. 
+3. Follow the [GitHub Enterprise instructions to set up SSH](https://docs.github.com/enterprise/2.11/user/articles/connecting-to-github-with-ssh):
 
-*If you have used git previously and prefer to interact with it via the command line, that's fine. However, we won't be giving command line instructions and won't help you if you get stuck by doing something silly.* 
+	[Check if you already have SSH keys](https://docs.github.com/enterprise/2.11/user/articles/checking-for-existing-ssh-keys)
 
-## Test Your Installation
+	[Generate a SSH key](https://docs.github.com/enterprise/2.11/user/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) if you don’t have one
 
-As a very basic use case, we are going to use git and GitHub to access the course materials. The course materials live in a repository ("repo") on GitHub. There are three main steps: 
+	[Add the SSH key to your account](https://docs.github.com/enterprise/2.11/user/articles/adding-a-new-ssh-key-to-your-github-account) 
 
-1. *Fork* the repo on GitHub. This creates a copy of the class repo under your own account. Changes you make here won't be reflected in the original repo -- think of it as your playground. 
-2. *Clone* the forked repo from GitHub to your computer. Here's where you'll interact with the files. 
-3. After changing files, you can *push* your changes back up to GitHub. Let's see how this all works. 
-
-**Fork the Repo**
-
-Navigate to [`https://github.com/PhilChodrow/mban_orientation`](https://github.com/PhilChodrow/mban_orientation). Make sure you are signed in. Click the "Fork" button.
-
-![](figs/fork.png)
-
-You now have a copy of the mban_orientation repo under your own user account. 
-
-**Clone the Repo**
-
-Now go to GitHub Desktop. Choose "Clone Repository," and click the URL tab.  In the first field, enter `your_name/mban_orientation`. In the second field, enter the location on your computer where you would like to place the materials. Your desktop is fine. 
-
-![](figs/clone.png)
-
-Take a moment to check that the folder containing some files has appeared in the specified location on your computer. 
-
-**Edit Some Files**
-
-Open the file `1_orientation/1_git/README.md` in a text editor. Replace the first line of text with "# [your_name or GitHub username]". 
-
-**Push Your Changes**
-
-Once you have made your changes in the file, check back on GitHub Desktop. The client has noticed that you have changed this file, and even gives a visual description of what change you made. 
-
-![](figs/commit_push.png)
-
-In the "Summary" field, write "git preassignment." Then, click "Commit to master" and then "Push origin." To check that this worked: 
-
-1. Navigate back to your fork of the repository on GitHub.com in your browser. 
-2. Click through `1_orientation/1_git`. The file README.md is rendered at the bottom. It should have your name on it. 
-
-If that's what you see, congratulations! You are up and running with git and GitHub, and are ready to move on to the next phase of the preassignment. 
+	[Test the SSH connection](https://docs.github.com/enterprise/2.11/user/articles/testing-your-ssh-connection)
 
 **If You Encounter Problems**
 
