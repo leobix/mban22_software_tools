@@ -178,7 +178,7 @@ How can we manage complex, code-based workflows? How can we reliably share code 
 
 ## Install Git
 
-We will be using the command-line interface to Git. First of all check if you already have git installed (in which case you can skip this step). **Windows** users should look for Git Bash while **macOS** and **Linux** users should open a terminal and try running the command: `git`
+We will be using the command-line interface to Git. First of all, check if you already have git installed (in which case you can skip this step). **Windows** users should look for Git Bash, while **macOS** and **Linux** users should open a terminal and try running the command: `git`
 
 If you don't have git installed, go to the [Git project page](https://www.git-scm.com/) and follow the link on the right side to download the installer for your operating system. Follow the instructions in the README file in the downloaded .zip or .dmg.
 
@@ -191,7 +191,6 @@ If you don't have git installed, go to the [Git project page](https://www.git-sc
 
 [GitHub](https://github.com/) is a hosting service for git that makes it easy to share your code. 
 
-Visit github.mit.edu and log in.
 
 1. Sign up for an account -- remember to keep track of your username and password. Feel free to enter information about yourself and optionally a profile picture. 
 
@@ -206,6 +205,9 @@ Visit github.mit.edu and log in.
 	[Add the SSH key to your account](https://docs.github.com/enterprise/2.11/user/articles/adding-a-new-ssh-key-to-your-github-account) 
 
 	[Test the SSH connection](https://docs.github.com/enterprise/2.11/user/articles/testing-your-ssh-connection)
+
+
+
 
 **If You Encounter Problems**
 
