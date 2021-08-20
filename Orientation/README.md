@@ -209,7 +209,7 @@ If you don't have git installed, go to the [Git project page](https://www.git-sc
 
 
 
-**If You Encounter Problems**
+# If You Encounter Problems
 
 1. If you receive an error message, Google it. 
 2. If you tried that, write an email to `kimvc@mit.edu` and `hwiberg@mit.edu` describing the problem in as much detail as possible, preferably including screenshots.  
