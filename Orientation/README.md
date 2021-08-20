@@ -40,7 +40,7 @@ If you encounter any error messages that you are unable to handle, please email 
 
 ## Install Julia
 
-Julia is programming language developed at MIT. To install Julia, go to [`https://julialang.org/downloads/`](https://julialang.org/downloads/) and download the appropriate version for your operating system. See [`here`](https://julialang.org/downloads/platform.html) for more detailed instructions.
+Julia is programming language developed at MIT. To install Julia, go to [`https://julialang.org/downloads/`](https://julialang.org/downloads/) and download the appropriate version for your operating system. See [`here`](https://julialang.org/downloads/platform/) for more detailed instructions.
 We will assume that everyone has installed the most recent version of Julia (v1.6.2). If you have an older version installed, we recommend that you install the newer version as well.
 
 To confirm that Julia is installed, open a Julia window by clicking on the Julia icon in your applications menu (note: mac users should make sure Julia is copied into their applications folder). You should see a prompt at the bottom of the new window that looks like this:
@@ -106,7 +106,7 @@ If this is successful, a Jupyter tab will open in the default browser on your co
 
 Gurobi is a commercial optimization solver that we will use to solve optimization problems in class. Here are the basic steps that you will need to follow to install Gurobi:
 
-1. Make a Gurobi account [`here`](https://www.gurobi.com/registration-general-reg/) using your @mit.edu email address (select the Academic option, not the commercial option).
+1. Register for a Gurobi account on the [gurobi website](https://www.gurobi.com). Use your @mit.edu email address, and select the Academic option (not the commercial option).
 2. Download the Gurobi Optimizer software [`here`](https://www.gurobi.com/downloads/) and install.
 3. Create and download an Academic License to use the software [`here`](https://www.gurobi.com/downloads/end-user-license-agreement-academic/).
 4. Use the license file to activate the Gurobi software that you installed. Follow the instructions on the license page to run the grbgetkey command. **Note that you must be connected to the MIT SECURE network to do this.** If you are not on campus, please move on to the next section (IJulia) and come back to this step later.
