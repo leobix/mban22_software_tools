@@ -77,6 +77,9 @@ You should see the output below
 A JuMP Model
 Feasibility problem with:
 Variables: 0
+Model mode: AUTOMATIC
+CachingOptimizer state: NO_OPTIMIZER
+Solver name: No optimizer attached.
 ```
 
 ## Install IJulia and Jupyter
@@ -98,7 +101,7 @@ julia> notebook()
 install Jupyter via Conda, y/n? [y]: 
 ```
 
-If this is successful, a Jupyter tab will open in the default browser on your computer. Click “New” in the top right corner to make a new notebook (if a menu appears, select Julia XX or XX). A new tab will open with a blank Jupyter notebook.
+If this is successful, a Jupyter tab will open in the default browser on your computer. Click “New” in the top right corner to make a new notebook (if a menu appears, select Julia 1.6.2). A new tab will open with a blank Jupyter notebook.
 
 
 ## Install Gurobi
