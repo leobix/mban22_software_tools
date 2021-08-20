@@ -2,6 +2,11 @@
 
 This is a **long** preassignment that involves lots of software installation and testing. Please leave a total of at least **2 hours** to complete this preassignment. That may seem like a long time, but once you've done it you'll have a powerful suite of software that you can use through your career at MIT and beyond. 
 
+**If You Encounter Problems**
+1. If you receive an error message, Google it. 
+2. If you tried that, write an email to `kimvc@mit.edu` and `hwiberg@mit.edu` describing the problem in as much detail as possible, preferably including screenshots.  
+
+
 # 1. Data Analysis: R and RStudio
 
 ## Install R and RStudio
@@ -24,13 +29,6 @@ Once the installation is complete, try to load the package
 library(tidyverse)
 ```
 If you encounter any error messages that you are unable to handle, please email us. 
-
-
-**If You Encounter Problems**
-
-1. If you receive an error message, Google it. 
-2. If you tried that, write an email to `kimvc@mit.edu` and `hwiberg@mit.edu` describing the problem in as much detail as possible, preferably including screenshots.  
-
 
 # 2. Optimization: Julia and JuMP
 
@@ -205,14 +203,6 @@ If you don't have git installed, go to the [Git project page](https://www.git-sc
 	[Add the SSH key to your account](https://docs.github.com/enterprise/2.11/user/articles/adding-a-new-ssh-key-to-your-github-account) 
 
 	[Test the SSH connection](https://docs.github.com/enterprise/2.11/user/articles/testing-your-ssh-connection)
-
-
-
-
-# If You Encounter Problems
-
-1. If you receive an error message, Google it. 
-2. If you tried that, write an email to `kimvc@mit.edu` and `hwiberg@mit.edu` describing the problem in as much detail as possible, preferably including screenshots.  
 
 
 **If you've made it this far, congratulations!** You now possess a powerful set of tools for analyzing data, solving optimization problems, and collaborating on code. You're ready to go!  
