@@ -192,17 +192,17 @@ If you don't have git installed, go to the [Git project page](https://www.git-sc
 
 1. Sign up for an account -- remember to keep track of your username and password. Feel free to enter information about yourself and optionally a profile picture. 
 
-2. From the menu at the top right corner of the page, go to Settings, and select [SSH and GPG keys](https://github.mit.edu/settings/keys).
+2. From the menu at the top right corner of the page, go to Settings, and select SSH and GPG keys.
 
-3. Follow the [GitHub Enterprise instructions to set up SSH](https://docs.github.com/enterprise/2.11/user/articles/connecting-to-github-with-ssh):
+3. Follow the [GitHub instructions to set up SSH](https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh):
 
-	[Check if you already have SSH keys](https://docs.github.com/enterprise/2.11/user/articles/checking-for-existing-ssh-keys)
+	[Check if you already have SSH keys](https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh/checking-for-existing-ssh-keys)
 
-	[Generate a SSH key](https://docs.github.com/enterprise/2.11/user/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) if you don’t have one
+	[Generate a SSH key](https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) if you don’t have one
 
-	[Add the SSH key to your account](https://docs.github.com/enterprise/2.11/user/articles/adding-a-new-ssh-key-to-your-github-account) 
+	[Add the SSH key to your account](https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) 
 
-	[Test the SSH connection](https://docs.github.com/enterprise/2.11/user/articles/testing-your-ssh-connection)
+	[Test the SSH connection](https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh/testing-your-ssh-connection)
 
 
 **If you've made it this far, congratulations!** You now possess a powerful set of tools for analyzing data, solving optimization problems, and collaborating on code. You're ready to go!  
