@@ -157,7 +157,7 @@ rm(list=ls())
 
 # How do I install a new package in your machine:
 # Option 1: with a command
-install.packages("tidyverse")
+# install.packages("tidyverse")
 # Option 2: via an interface: Click Packages at the right bottom panel > Install > type the name in the Packages line.
 
 # Once a package is installed, you still need to load it in each session (but you do not need to re-install it):
