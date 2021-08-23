@@ -159,7 +159,6 @@ summary(ols_model)
 #' 
 #' **Question**: What is the predicted price for a listing that accommodates 6 people?
 #' 
-#' **Answer**: 53.6598 + 6*38.1835 =  282.7608.
 
 
 #'
