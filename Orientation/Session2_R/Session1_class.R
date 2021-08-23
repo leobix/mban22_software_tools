@@ -25,11 +25,11 @@ library(e1071)
 #' 3. Clustering (unsupervised learning): k-means clustering
 #' 
 #' 
-#' Supervised learning refers to those tasks in which we observe some input $x$ and use it to predict some output $y$. 
+#' Supervised learning refers to those tasks in which we observe some input x and use it to predict some output y. 
 #' 
-#' When the target output $y$ is continous we refer to the problem as **regression**, and when the label is instead categorical, we call it a **classification** problem. 
+#' When the target output y is continous we refer to the problem as **regression**, and when the label is instead categorical, we call it a **classification** problem. 
 #' 
-#' Unsupervised learning, instead, refers to tasks in which we aim to understand and analyze the input $x$ without any target $y$. 
+#' Unsupervised learning, instead, refers to tasks in which we aim to understand and analyze the input x without any target y. 
 #' 
 #' **Clustering**, for example, is an unsupervised task that groups data points with similar characteristics.
 #' 
@@ -46,7 +46,7 @@ library(e1071)
 #' 
 #' the goal of a regression task is to use the dataset to find a function h such that h(x) yields an accurate approximation of the desired output y for any unseen input x.
 #' 
-#' The function $h$ is usually found by selecting a family of models (e.g. linear models, tree models, neural networks, etc.), 
+#' The function h is usually found by selecting a family of models (e.g. linear models, tree models, neural networks, etc.), 
 #' 
 #' and solving an optimization problem to find the best model within this family according to some *loss function*. 
 #' 
