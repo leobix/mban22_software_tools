@@ -8,18 +8,17 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #' 
 ## ----libraries, message=FALSE-------------------------------------------------
-library(modelr)
-library(glmnet)
+library(modelr) 
 library(tidyverse)
-library(caTools)
-library(randomForest)
-library(ROCR)
-library(rpart)
-library(rpart.plot)
-library(RColorBrewer)
-library(leaflet)
-library(caret)
-library(e1071)
+library(caTools) 
+library(randomForest) 
+library(ROCR) 
+library(rpart) 
+library(rpart.plot) 
+library(RColorBrewer) 
+library(leaflet) 
+library(caret) 
+library(e1071) 
 
 #' ## Overview
 #'In this session we are going to explore three common tasks in Machine Learning:
@@ -139,11 +138,11 @@ summary(ols_model)
 
 
 
-#' Let's look at the 'coefficients' section. In the 'estimate' column, we see that the point estimates for the model coefficients say that the intercept is \$53.65 and the coefficient that multiplies the `accommodates` variable is \$38.18. 
+#' Let's look at the 'coefficients' section. In the 'estimate' column, we see that the point estimates for the model coefficients say that the intercept is \$53.6598 and the coefficient that multiplies the `accommodates` variable is \$38.1835. 
 #' 
 #' **Question**: What is the predicted price for a listing that accommodates 6 people?
 #' 
-#' **Answer**: 53.65 + 6*38.18 =  $282.73.
+#' **Answer**: $53.6598 + $6*38.1835 =  $282.7608.
 
 
 #'
@@ -193,8 +192,12 @@ listings %>%
 mse <- mean(ols_model$residuals ^ 2)
 mse
 
+#' **Question**: Why is mse not a great metric?
+#' 
+#' **Answer**: this measure is highly affected by the scale of the data (more data means more total error).
 
-#' Clearly this measure is highly affected by the scale of the data (more data means more total error). We can also use the 'R squared' coefficient as a more interpretable measure of accuracy, since it falls between 0 and 1. 
+
+#' We can also use the 'R squared' coefficient as a more interpretable measure of accuracy, since it falls between 0 and 1. 
 #' 
 #' It is the *proportion of variance in the data which is explained by the model*, and is calculated as:
 
@@ -288,7 +291,7 @@ rsquare(ols_model3, part$val)
 #' 
 #' Checking all possible subsets of columns might be intractable when there are many variables, so we want a more systematic way to choose the columns.
 #'
-#'  WOne option is to look at the summary() of the model to see which variables are not statistically significant and can therefore be removed from the formula.
+#' One option is to look at the summary() of the model to see which variables are not statistically significant and can therefore be removed from the formula.
 #' 
 #' 
 #' 
@@ -308,9 +311,7 @@ rsquare(ols_model3, part$test)
 #' 
 #' 
 #' 
-#' So far we've looked at models which predict a continuous response variable. There are many related models which predict categorical outcomes, such as whether an email is spam or not, or which digit a handwritten 
-#' 
-#' number is. We'll take a brief look at three of these: logistic regression and classification trees.
+#' So far we've looked at models which predict a continuous response variable. There are many related models which predict categorical outcomes, such as whether an email is spam or not, or which digit a handwritten number is. We'll take a brief look at three of these: logistic regression and classification trees.
 #' 
 #' 
 #' 
@@ -364,9 +365,7 @@ plot(zs, loss)
 head(all_listings$amenities)
 
 
-#' This column also contains information which could be useful for prediction, if we can come up with a clean way of representing the amenities. Our goal here is to turn the amenities column into many columns, 
-#' 
-#' one for each amenity, and with logical values indicating whether each listing has each amenity. This is just a bit tricky, so I'm calling a function called `expand_amenities` that will do this for us. 
+#' This column also contains information which could be useful for prediction, if we can come up with a clean way of representing the amenities. Our goal here is to turn the amenities column into many columns, one for each amenity, and with logical values indicating whether each listing has each amenity. This is just a bit tricky, so I'm calling a function called `expand_amenities` that will do this for us. 
 #' 
 #' We need to `source()` the file that has this function in it, and then we'll call it on the `all_listings` data frame.	
 
@@ -398,9 +397,9 @@ listingsGLMTest <- subset(listingsGLM, spl == FALSE)
 #' To build a logistic regression model, instead of the `lm()` function, we'll now use `glm()`, but the syntax is almost exactly the same:	
 
 
-l.glm <- glm(amenity_Elevator_in_Building ~ price,
+log.reg.model <- glm(amenity_Elevator_in_Building ~ price,
              family = "binomial", data = listingsGLMTrain)
-summary(l.glm)
+summary(log.reg.model)
 
 #' To evaluate the prediction accuracy of our model, we count up the number of times each of the following occurs:
 #' 
@@ -412,7 +411,7 @@ summary(l.glm)
 #' A table that holds these values is called a "confusion matrix". Then, accuracy = ( # True Positives +  # True Negatives) / (Total # of observations) 
 
 #TESTING ACCURACY
-pred_test <- predict(l.glm, newdata = listingsGLMTest, type = "response")
+pred_test <- predict(log.reg.model, newdata = listingsGLMTest, type = "response")
 confusionMatrixTest <- table(listingsGLMTest$amenity_Elevator_in_Building,
                              ifelse(pred_test > 0.5, "pred = 1", "pred = 0"))
 confusionMatrixTest
@@ -423,7 +422,7 @@ print(accTest)
 
 
 listingsGLMTest %>%
-  mutate(pred = predict(l.glm, newdata = listingsGLMTest, type = "response")) %>%
+  mutate(pred = predict(log.reg.model, newdata = listingsGLMTest, type = "response")) %>%
   ggplot(aes(x = price)) + 
   geom_line(aes(y = pred)) + 
   geom_point(aes(y = as.numeric(amenity_Elevator_in_Building )-1))
@@ -455,7 +454,7 @@ listingsGLMTest %>%
 
 
 #AUC
-pred_test <- predict(l.glm, newdata = listingsGLMTest, type = "response")	
+pred_test <- predict(log.reg.model, newdata = listingsGLMTest, type = "response")	
 pred_obj <- prediction(pred_test, listingsGLMTest$amenity_Elevator_in_Building)
 # Creating a prediction object for ROCR	
 perf <- performance(pred_obj, 'tpr', 'fpr')	
@@ -470,12 +469,12 @@ performance(pred_obj, 'auc')@y.values
 #' **Exercise**: Add more variables to Logistic Regression. Try to beat the out-of-sample performance for logistic regression of elevators on price by adding new variables. Compute the out-of-sample AUC of the final model, and plot the ROC curve.
 
 
-l.glm_2 <- glm(amenity_Elevator_in_Building ~
+log.reg.model2 <- glm(amenity_Elevator_in_Building ~
                  price + neighbourhood_cleansed,
                family = "binomial", data = listingsGLMTrain)
 
 #TESTING ACCURACY
-pred_test <- predict(l.glm_2, newdata = listingsGLMTest, type = "response")
+pred_test <- predict(log.reg.model2, newdata = listingsGLMTest, type = "response")
 confusionMatrixTest <- table(listingsGLMTest$amenity_Elevator_in_Building,
                              ifelse(pred_test > 0.5, "pred = 1", "pred = 0"))
 confusionMatrixTest
@@ -483,7 +482,7 @@ accTest <- sum(diag(confusionMatrixTest)) / nrow(listingsGLMTest)
 print(accTest)
 
 #AUC
-pred_test <- predict(l.glm_2, newdata = listingsGLMTest, type = "response")
+pred_test <- predict(log.reg.model2, newdata = listingsGLMTest, type = "response")
 pred_obj <- prediction(pred_test, listingsGLMTest$amenity_Elevator_in_Building)
 perf <- performance(pred_obj, 'tpr', 'fpr')
 performance(pred_obj, 'auc')@y.values
@@ -507,7 +506,7 @@ plot(perf, colorize = TRUE)
 #' The model construction step follows the same established pattern. We use the modelling function `rpart()`, which takes a formula and a data frame (and optional parameters) as arguments.	
 
 
-l.rpart <- rpart(amenity_Elevator_in_Building ~ price + 
+CART.model <- rpart(amenity_Elevator_in_Building ~ price + 
                    neighbourhood_cleansed,
                  data = listingsGLMTrain,
                  cp = 0.05)	
@@ -516,13 +515,13 @@ l.rpart <- rpart(amenity_Elevator_in_Building ~ price +
 #'We can plot the resulting tree using the `rpart.plot` package:	
 
 
-prp(l.rpart)
+prp(CART.model)
 
 #' 
-#' Let's calculate the testing accuracy for our model:
+#' Let's calculate the accuracy for our model:
 
 #TRAINING SET
-pred_train <- predict(l.rpart)[,2]
+pred_train <- predict(CART.model)[,2]
 confusionMatrixTrain <- table(listingsGLMTrain$amenity_Elevator_in_Building, 
                               ifelse(pred_train > 0.5, "pred = 1", "pred = 0"))
 confusionMatrixTrain
@@ -530,7 +529,7 @@ accTrain <- sum(diag(confusionMatrixTrain)) / nrow(listingsGLMTrain)
 print(accTrain)
 
 #TESTING SET
-pred_test <- predict(l.rpart, newdata = listingsGLMTest)[,2]
+pred_test <- predict(CART.model, newdata = listingsGLMTest)[,2]
 confusionMatrixTest <- table(listingsGLMTest$amenity_Elevator_in_Building,
                              ifelse(pred_test > 0.5, "pred = 1", "pred = 0"))
 confusionMatrixTest
@@ -574,9 +573,9 @@ prop.table(table(listingsGLMTest$amenity_Elevator_in_Building))
 #' *If the tree is too small => too few splits => we have an under-fitting problem.
 #' 
 #' 
-#' We want to find a tree in the middle, that is "just right". For this, we could use validation as in logistic regression: we train several models with different `cp` aprameters and then choose the one with the best performance in the validation set. However, we instead are gogint o explore
+#' We want to find a tree in the middle, that is "just right". For this, we could use validation as in logistic regression: we train several models with different `cp` aprameters and then choose the one with the best performance in the validation set. However, we instead are going to explore another very popular way to validate our models called *k-fold cross-validation*. 
 #' 
-#' another very popular way to validate our models called *k-fold cross-validation*. This type of validation splits the training set into $k$ random and equal size subsets and evaluates each model by training it using $(k-1)$ of the subsets and validating with the subset that was left out. 
+#' This type of validation splits the training set into $k$ random and equal size subsets and evaluates each model by training it using $(k-1)$ of the subsets and validating with the subset that was left out. 
 #' 
 #' This process is repeated $k$ times, each time leaving out a different fold. The $k$ validation losses are averaged and at the end we choose the model with the lowest average validation loss.
 #' 
@@ -604,18 +603,18 @@ x
 # Let's build a new CART model that uses this cp value.
 
 
-CVCARTmod = rpart(amenity_Elevator_in_Building ~ price + neighbourhood_cleansed, 
+CV.CART.model = rpart(amenity_Elevator_in_Building ~ price + neighbourhood_cleansed, 
                   data = listingsGLMTrain, cp = 0.011)
 
-prp(CVCARTmod)
+prp(CV.CART.model)
 
 #' We have a more informative tree now! We can also try looking at a more detailed graph of the tree.
 
 
-rpart.plot(CVCARTmod)
+rpart.plot(CV.CART.model)
 
 # TESTING ACCURACY
-pred_test <- predict(CVCARTmod, newdata = listingsGLMTest)[,2]
+pred_test <- predict(CV.CART.model, newdata = listingsGLMTest)[,2]
 confusionMatrixTest <- table(listingsGLMTest$amenity_Elevator_in_Building,
                              ifelse(pred_test > 0.5, "pred = 1", "pred = 0"))
 confusionMatrixTest
@@ -646,12 +645,12 @@ cartAUC
 #' We will compare the performance of random forest to what we got using our simple CART model and logistic regression. We'll try two models, one using 5 trees and one using 100 trees.
 
 set.seed(123)
-rf <- randomForest(amenity_Elevator_in_Building ~ price+neighbourhood_cleansed,
+rf.model1 <- randomForest(amenity_Elevator_in_Building ~ price+neighbourhood_cleansed,
                    data = listingsGLMTrain, ntree = 5)
 
 
 #TESTING ACCURACY
-pred_test <- predict(rf,newdata = listingsGLMTest)
+pred_test <- predict(rf.model1, newdata = listingsGLMTest)
 confusionMatrixTest <- table(listingsGLMTest$amenity_Elevator_in_Building,
                              ifelse(pred_test==TRUE, "pred = 1", "pred = 0"))
 accTest <- sum(diag(confusionMatrixTest)) / nrow(listingsGLMTest)
@@ -665,12 +664,12 @@ rfAUC
 #' Now we will train a random forest with 100 trees:
 
 
-rf <- randomForest(amenity_Elevator_in_Building ~ price+neighbourhood_cleansed,
+rf.model2 <- randomForest(amenity_Elevator_in_Building ~ price+neighbourhood_cleansed,
                    data = listingsGLMTrain, ntree = 100)
 
 
 #TESTING ACCURACY
-pred_test <- predict(rf,newdata = listingsGLMTest)
+pred_test <- predict(rf.model2, newdata = listingsGLMTest)
 confusionMatrixTest <- table(listingsGLMTest$amenity_Elevator_in_Building,
                              ifelse(pred_test==TRUE, "pred = 1", "pred = 0"))
 accTest <- sum(diag(confusionMatrixTest)) / nrow(listingsGLMTest)
@@ -682,9 +681,9 @@ rfAUC = as.numeric(performance(rfROCpred, "auc")@y.values)
 rfAUC
 
 #' 
-#' So random forest with only 5 trees does not do very well, but with 100 trees it is doing a bit better! 
+#' So random forest with only 5 trees does not do very well, and 100 trees did not do much better! 
 #' 
-#' Finally, let's try adding a lot more variables. We'll add all of the amenities as variables, and traun a random forest with 50 trees. 
+#'Let's try then adding a lot more variables. We'll add all of the amenities as variables, and train a random forest with 50 trees. 
 
 
 amenities_string <- listingsGLMTrain %>%
@@ -694,10 +693,10 @@ amenities_string <- listingsGLMTrain %>%
 rf_formula <- as.formula(paste("amenity_Elevator_in_Building ~ price+neighbourhood_cleansed", 
                                amenities_string, sep = " +  "))
 
-rf <- randomForest(rf_formula, data = listingsGLMTrain, ntree = 50)
+rf.model3 <- randomForest(rf_formula, data = listingsGLMTrain, ntree = 50)
 
 #TESTING ACCURACY
-pred_test <- predict(rf,newdata = listingsGLMTest)
+pred_test <- predict(rf.model3, newdata = listingsGLMTest)
 confusionMatrixTest <- table(listingsGLMTest$amenity_Elevator_in_Building,
                              ifelse(pred_test==TRUE, "pred = 1", "pred = 0"))
 accTest <- sum(diag(confusionMatrixTest)) / nrow(listingsGLMTest)
@@ -716,7 +715,7 @@ rfAUC
 #'  This plot shows us which variables the random forest model has determined are the most important for predicting whether or not a listing contains an elevator. It uses a metric called `MeanDecreaseGini` by default, which is the mean decrease in node impurity (you can read more about this metric online), to rank the importance of all of the  predictors used in the model. There are other metrics besides the Gini Importance that can also be used as a metric.
 
 
-varImpPlot(rf)
+varImpPlot(rf.model3)
 
 
 #' The variable importance plot shows us that the listing's neighborhood, whether or not it has a gym, its price, and whether it has a doorman are the four most important variables for predicting whether a listing will have an elevator. This not only gives us intuition about our random forest model, but can also be used to select variables to train other models.
@@ -733,7 +732,7 @@ listingsTest <- subset(listings, spl == FALSE)
 #' For linear regression, the code was:	
 
 
-lm1 <- lm(price ~ accommodates, data = listingsTrain)
+lm <- lm(price ~ accommodates, data = listingsTrain)
 
 
 #' Using Random Forest, we can write
@@ -747,7 +746,7 @@ rf <- randomForest(price ~ accommodates,
 
 
 listingsTrain %>%
-  gather_predictions(lm1, rf) %>%
+  gather_predictions(lm, rf) %>%
   ggplot(aes(x = accommodates)) +	
   geom_point(aes(y = price)) +	
   geom_line(aes(y = pred, color = model))
@@ -765,7 +764,18 @@ listingsTrain %>%
 #' 
 #' 
 #' Next, we consider **Unsupervised Learning**, where we are not given labelled examples, and we simply run ML algorithms on (feature) data, with the purpose of finding interesting structure and patterns in the data.  Let's run one of the widely-used unsupervised learning algorithms, **k-means clustering**, on the `listings` data frame to explore the Airbnb data set.
+#'
 #' 
+# ## k-Means Clustering
+# 
+# 1. The number of clusters is specified up front.
+# 2. Each point is randomly assigned to one of the clusters.
+# 3. The centroid of each cluster is computed. 
+# 4. Each point is then re-assigned to the cluster whose centroid is closest to the point.
+# 5. The cluster centroids are re-computed, and we go back to step 4.
+#
+# We terminate when the cluster assignments no longer change or we reach the maximum number of iterations.
+
 #' First, let's look at help page for the function `kmeans()`:
 
 
@@ -790,12 +800,24 @@ set.seed(1234)
 kmeans_clust <- kmeans(listings_numeric[,-1:-3],
                        5, iter.max = 1000, nstart = 100)
 
+# Get the cluster assignments
+kmeansGroups = kmeans_clust$cluster
 
-#' What are the characteristics of these 5 groups?  How many listings are in each cluster?
+# How big are they?
+table(kmeansGroups)
 
-
+#' What are the centers of these 5 groups?  
 kmeans_clust$centers
-table(kmeans_clust$cluster)
+
+# Break the data into the clusters. 
+KmeansCluster1 = subset(listings_numeric, kmeansGroups == 1)
+KmeansCluster2 = subset(listings_numeric, kmeansGroups == 2)
+KmeansCluster3 = subset(listings_numeric, kmeansGroups == 3)
+KmeansCluster4 = subset(listings_numeric, kmeansGroups == 4)
+KmeansCluster5 = subset(listings_numeric, kmeansGroups == 5)
+
+
+
 
 
 #' Finally let's take a look at where the clusters are located; to do this we  will use a package called `leaflet`; additionally to help us get a good color scheme we will use `RColorBrewer`.
@@ -805,8 +827,29 @@ table(kmeans_clust$cluster)
 
 display.brewer.all(type="qual") # Type can be set to 'div', 'seq', 'qual', or 'all'
 
+# We can visualize the clusters individually:
+leaflet(KmeansCluster1) %>% 
+  addTiles() %>% 
+  addCircleMarkers(~longitude, ~latitude)
 
-#' Let's visualize the distribution of clusters from the houses; first we need to add our cluster labels to the data and then we will define a color palette that leaflet can use to help us.
+leaflet(KmeansCluster2) %>% 
+  addTiles() %>% 
+  addCircleMarkers(~longitude, ~latitude)
+
+leaflet(KmeansCluster3) %>% 
+  addTiles() %>% 
+  addCircleMarkers(~longitude, ~latitude)
+
+leaflet(KmeansCluster4) %>% 
+  addTiles() %>% 
+  addCircleMarkers(~longitude, ~latitude)
+
+leaflet(KmeansCluster5) %>% 
+  addTiles() %>% 
+  addCircleMarkers(~longitude, ~latitude)
+
+
+#' Or we can also visualize the distribution of all clusters from the houses; first we need to add our cluster labels to the data and then we will define a color palette that leaflet can use to help us.
 
 
 listings_numeric = listings_numeric %>% 
@@ -827,7 +870,7 @@ leaflet(listings_numeric) %>%
   addCircleMarkers(~longitude, ~latitude, color = ~pal(clust_label))
 
 
-#' Can you see where the clusters are?  Also, what is the proper number of clusters? We will revisit this in the next session, because it requires some more advanced tidyverse tools.  Stay tuned!
+#' Can you see where the clusters are?  Also, what is the proper number of clusters? 
 #' 
 #' In this module, we have covered examples of machine learning methods for linear regression (ordinary and penalized) and classification (supervised and unsupervised).  
 #' 
