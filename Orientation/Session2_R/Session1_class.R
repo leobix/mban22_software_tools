@@ -259,7 +259,7 @@ rsquare(ols_model, listings)
 #' 
 #' the only way of selecting the best model from a model class would be to look at its performance on the testing set, 
 #' 
-#' and therefore we would be kinda of "cheating" by using the "unseen" data to select the model.
+#' and therefore we would be kind of "cheating" by using the "unseen" data to select the model.
 #' 
 #' `modelr::resample_partition` provides an easy way of creating these data partitions:
 
