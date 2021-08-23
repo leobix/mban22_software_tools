@@ -4537,7 +4537,7 @@ all_listings &lt;- process_listings(&quot;listings.csv&quot;)</code></pre>
 mse</code></pre>
 <pre><code>## [1] 8524.687</code></pre>
 <p><strong>Question</strong>: Why is mse not a great metric?</p>
-<p><strong>Answer</strong>: this measure is highly affected by the scale of the data (more data means more total error). We can also use the ‘R squared’ coefficient as a more interpretable measure of accuracy, since it falls between 0 and 1.</p>
+<p><strong>Answer</strong>: this measure is highly affected by the scale of the data. We can also use the ‘R squared’ coefficient as a more interpretable measure of accuracy, since it falls between 0 and 1.</p>
 <p>It is the <em>proportion of variance in the data which is explained by the model</em>, and is calculated as:</p>
 <pre class="r"><code>rsq &lt;- 1 - mse / mean((listings$price - mean(listings$price)) ^ 2)
 rsq</code></pre>

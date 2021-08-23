@@ -194,7 +194,7 @@ mse
 
 #' **Question**: Why is mse not a great metric?
 #' 
-#' **Answer**: this measure is highly affected by the scale of the data (more data means more total error).
+#' **Answer**: this measure is highly affected by the scale of the data.
 
 
 #' We can also use the 'R squared' coefficient as a more interpretable measure of accuracy, since it falls between 0 and 1. 
