@@ -249,8 +249,7 @@ raw_listings %>% select(name, neighbourhood, price, bedrooms) %>%
 # EXERCISE: The `%in%` operator.
 # Filter the listings to those that accommodate either 2, 4, or 7 AND have at least 2 bedrooms?	
 
-raw_listings %>% filter(accommodates %in% c(2,4,7) & bedrooms >= 2) %>%
-  select(id, neighbourhood, accommodates, bedrooms)
+## FILL IN HERE ##
 
 #' Note that the tidyverse packages generally do not change the dataframe objects they act on. 
 #' For example, the code above doesn't change `listings`, but instead returns a new dataframe 
@@ -294,11 +293,7 @@ listings %>%
 #' Which has the highest average accommodation capacity?
 #' Notice that once we create a column in the summarize() function, it's available later in the series of operations!
 
-listings %>%
-  group_by(property_type) %>% 
-  summarize(avg.price = mean(price),
-            avg.accommodates = mean(accommodates)) %>%
-  arrange(desc(avg.accommodates))
+## FILL IN HERE ##
 
 ##### JOIN functions #####
 #' Our last topic will be how to **join** two data frames together. 
@@ -345,12 +340,7 @@ listings %>%
 #' EXERCISE: We can address this problem by filtering out neighborhoods below a threshold count using our new num variable. 
 #' Extend the query above to filter to only neighborhoods with > 200 listings.
 
-listings %>%
-  group_by(neighbourhood) %>%
-  summarize(avg.price = mean(price),
-            med.price = median(price),
-            num = n()) %>%
-  filter(num > 200)
+## FILL IN HERE ##
 
 # Example 2: ratings summarized by the number of bedrooms
 # What's new here? we are filtering out NA values.
