@@ -127,13 +127,13 @@ If you see an error message during this installation, it could be because you di
 ENV["GUROBI_HOME"] = "C:\\Program Files\\gurobi912\\win64"
 # ... or perhaps ...
 ENV["GUROBI_HOME"] = "C:\\gurobi912\\win64"
-import Pkg
+using Pkg
 Pkg.add("Gurobi")
 Pkg.build("Gurobi")
 
 # On Mac, this might be
 ENV["GUROBI_HOME"] = "/Library/gurobi912/mac64"
-import Pkg
+using Pkg
 Pkg.add("Gurobi")
 Pkg.build("Gurobi")
 ```
