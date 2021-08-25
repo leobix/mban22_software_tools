@@ -141,6 +141,8 @@ summary(ols_model)
 #' Let's look at the 'coefficients' section. In the 'estimate' column, we see that the point estimates for the model coefficients say that the intercept is \$53.6598 and the coefficient that multiplies the `accommodates` variable is \$38.1835. 
 #' 
 #' **Question**: What is the predicted price for a listing that accommodates 6 people?
+#' 
+#' **Answer**: $53.6598 + $6*38.1835 =  $282.7608.
 
 
 #'
@@ -191,8 +193,10 @@ mse <- mean(ols_model$residuals ^ 2)
 mse
 
 #' **Question**: Why is mse not a great metric?
-
-
+#' 
+#' **Answer**: this measure is highly affected by the scale of the data.
+#'
+#'
 #' We can also use the 'R squared' coefficient as a more interpretable measure of accuracy, since it falls between 0 and 1. 
 #' 
 #' It is the *proportion of variance in the data which is explained by the model*, and is calculated as:
@@ -244,13 +248,6 @@ part <- resample_partition(listings, c(train = .6, val = .2, test = .2))
 names(part)
 
 
-#' In order to save space, these are just pointers to rows in our data -- meaning we lose some of the conveniences of working with tibbles. Since our dataset is relatively small, we can just convert them back to tibbles:
-
-
-part_tib <- part %>% map(as_tibble)
-
-
-
 #' 
 #' ### Model Iteration
 #'
@@ -262,9 +259,9 @@ part_tib <- part %>% map(as_tibble)
 #' We will use the training set to train our models, we will use the validation set to choose one of the models and finally we will use the test set to evaluate our chosen model.
 #' 
 
-ols_model1 <- lm(price ~ ., data = listings) 
+ols_model1 <- lm(price ~ ., data = part$train) 
 
-#' The symbol `.` can also be used to represent all variables, so the above is equivalent to lm(price ~ accommodates + review_scores_rating + property_type + neighbourhood_cleansed + room_type, data = listings).
+#' The symbol `.` can also be used to represent all variables, so the above is equivalent to lm(price ~ accommodates + review_scores_rating + property_type + neighbourhood_cleansed + room_type, data = part$train).
 #' #'
 #' We next check the R squared with respect to the validation set:
 rsquare(ols_model1, part$val)
@@ -272,15 +269,16 @@ rsquare(ols_model1, part$val)
 
 #' We will build two more models using only a subset of the columns:
 
-ols_model2 <- lm(price ~ accommodates + review_scores_rating, data = listings) 
+ols_model2 <- lm(price ~ accommodates + review_scores_rating, data = part$train) 
 rsquare(ols_model2, part$val)
 
-ols_model3 <- lm(price ~ accommodates + review_scores_rating + property_type + neighbourhood_cleansed + accommodates * room_type, data = listings) 
+ols_model3 <- lm(price ~ accommodates + review_scores_rating + property_type + neighbourhood_cleansed + accommodates * room_type, data = part$train) 
 rsquare(ols_model3, part$val)
 
 
 #' **Question**: Does the third formula still correspond to a linear model?
 #' 
+#' **Answer**: We have created some nonlinear features, so not technically. But we still fit a 'linear' model to these new features -- think of it as augmenting the input vector, $x$, with new features, and then fitting a pure linear model.
 #' 
 #' 
 #' 
@@ -291,6 +289,8 @@ rsquare(ols_model3, part$val)
 #' 
 #' 
 #' **Question**: Can I always trust the statistically significance results?
+#' 
+#' **Answer**: No! If the variables are correlated, the statistically significance displayed in the summary() output might be incorrect. Therefore, it is important that we only remove one column at a time, since the significance might change.
 
 
 #' For now let's stick to those three models. The third model achieves the highest R squared and therefore we will choose this as our final model. We can finally evaluate the performance of this model by computing the R squared with respect to the test set:
@@ -437,6 +437,7 @@ listingsGLMTest %>%
 #' 
 #' **Question**: As a sanity check: What is the true positive rate and false positive rate of a random classifier that chooses `has an elevator` with probability of $\alpha$? (i.e. a classifier that randomly predicts *positive* $\alpha$% of the time.) What is the AUC for this classifier?
 #' 
+#' **Answer**: Both the true positive rate and false positive rate are $\alpha$. The AUC is 0.5.
 #' 
 #' 
 #' 
@@ -459,7 +460,27 @@ performance(pred_obj, 'auc')@y.values
 #' The worst possible is 0.5 - random guessing. We're definitely better than random here, and could likely improve by adding more predictors.	
 #' 
 #' **Exercise**: Add more variables to Logistic Regression. Try to beat the out-of-sample performance for logistic regression of elevators on price by adding new variables. Compute the out-of-sample AUC of the final model, and plot the ROC curve.
-#' 
+
+
+log.reg.model2 <- glm(amenity_Elevator_in_Building ~
+                 price + neighbourhood_cleansed,
+               family = "binomial", data = listingsGLMTrain)
+
+#TESTING ACCURACY
+pred_test <- predict(log.reg.model2, newdata = listingsGLMTest, type = "response")
+confusionMatrixTest <- table(listingsGLMTest$amenity_Elevator_in_Building,
+                             ifelse(pred_test > 0.5, "pred = 1", "pred = 0"))
+confusionMatrixTest
+accTest <- sum(diag(confusionMatrixTest)) / nrow(listingsGLMTest)
+print(accTest)
+
+#AUC
+pred_test <- predict(log.reg.model2, newdata = listingsGLMTest, type = "response")
+pred_obj <- prediction(pred_test, listingsGLMTest$amenity_Elevator_in_Building)
+perf <- performance(pred_obj, 'tpr', 'fpr')
+performance(pred_obj, 'auc')@y.values
+plot(perf, colorize = TRUE)
+
 
 #' Remember, evaluation and iteration are also important when choosing classification models! The same technique we used with regression problems of splitting the data into a training, validation, and testing sets should be applied here to decide what columns to include as our input! 
 

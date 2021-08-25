@@ -274,13 +274,6 @@ part <- resample_partition(listings, c(train = .6, val = .2, test = .2))
 names(part)
 
 
-#' In order to save space, these are just pointers to rows in our data -- meaning we lose some of the conveniences of working with tibbles. 
-#' 
-#' Since our dataset is relatively small, we can just convert them back to tibbles:
-
-
-part_tib <- part %>% map(as_tibble)
-
 
 
 #' 
@@ -294,11 +287,11 @@ part_tib <- part %>% map(as_tibble)
 #' We will use the training set to train our models, we will use the validation set to choose one of the models and finally we will use the test set to evaluate our chosen model.
 #' 
 
-ols_model1 <- lm(price ~ ., data = listings) 
+ols_model1 <- lm(price ~ ., data = part$train) 
 
 #' The symbol `.` can also be used to represent all variables, so the above is equivalent to
 #' 
-#' lm(price ~ accommodates + review_scores_rating + property_type + neighbourhood_cleansed + room_type, data = listings).
+#' lm(price ~ accommodates + review_scores_rating + property_type + neighbourhood_cleansed + room_type, data = part$train).
 #' 
 #' We next check the R squared with respect to the validation set:
 #' 
@@ -308,10 +301,10 @@ rsquare(ols_model1, part$val)
 
 #' We will build two more models using only a subset of the columns:
 
-ols_model2 <- lm(price ~ accommodates + review_scores_rating, data = listings) 
+ols_model2 <- lm(price ~ accommodates + review_scores_rating, data = part$train) 
 rsquare(ols_model2, part$val)
 
-ols_model3 <- lm(price ~ accommodates + review_scores_rating + property_type + neighbourhood_cleansed + accommodates * room_type, data = listings) 
+ols_model3 <- lm(price ~ accommodates + review_scores_rating + property_type + neighbourhood_cleansed + accommodates * room_type, data = part$train) 
 rsquare(ols_model3, part$val)
 
 
