@@ -138,7 +138,7 @@ Pkg.add("Gurobi")
 Pkg.build("Gurobi")
 ```
 
-**Note: check the version of Gurobi that you downloaded. The above instruutions assume you downloaded version 9.1.2. If you have
+**Note: check the version of Gurobi that you downloaded. The above instructions assume you downloaded version 9.1.2. If you have
 a different version, your path may differ (e.g. Gurobi 9.1.0 -> replace gurobi912 with gurobi910). 
 If this doesn't work, also check which folder you installed Gurobi in, and update the path accordingly if necessary.**
 
