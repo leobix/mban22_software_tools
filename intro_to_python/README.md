@@ -13,10 +13,9 @@
    - How do I make my code run faster? – vectorized functions
    - Data frames, I/O, visualization
 
-### SIP: The basics of Machine Learning and introduction to Neural Networks
+### SIP: The Data-Scientist Pipeline: an Introduction to Machine Learning in Python
 
 ### IAP: Introduction to Deep Learning
-
 
 ## Instructions for the Python Installation
 ### Remark: there exists several ways to download and install Python. We propose one simple way but don't worry if you have Python installed differently or if you are using another version, like 3.7.
