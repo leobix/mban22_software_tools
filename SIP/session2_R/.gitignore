@@ -1,3 +1,2 @@
 data/*.csv
 clean_data.R
-**/*.html
