@@ -22,8 +22,8 @@ ui <- fluidPage(
         sidebarPanel(
             sliderInput("ndays", "Days", min=0, max=10, value=1, step=1),
             sliderInput("npeople", "People", min=1, max=10, value=1, step=1),
-            dateInput("weekend_of", "Weekend of:", min=min(calendar $ date), 
-                      max=max(calendar $ date), value=ymd(20191108))
+            dateInput("start_of_stay", "Start of stay:", min=min(calendar $ date), 
+                      max=max(calendar $ date), value=ymd(20191101))
         ),
         # Show a plot of the generated distribution
         mainPanel(
@@ -36,8 +36,7 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
     toplot <- reactive({
-        get_availability_table(input $ ndays, input $ npeople) %>%
-            filter(stay_start == input $ weekend_of)
+        get_availability_table(input $ start_of_stay, input $ ndays, input $ npeople)
     })
     
     output$distPlot <- renderPlot({

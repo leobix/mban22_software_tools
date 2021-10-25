@@ -8,101 +8,61 @@ library(ggmap)     #' for plotting on a map
 
 
 #' Read data sets
-listings = read_csv('../data/listings.csv')
-calendar = read_csv('../data/calendar.csv')
+listings = read_csv('data/listings.csv')
+calendar = read_csv('data/calendar.csv')
 
 #' Clean prices
-listings = listings %>% mutate_at(vars(contains("price")), parse_number)
-calendar = calendar %>% mutate_at(vars(contains("price")), parse_number)
+listings = listings %>% 
+    mutate(price  = parse_number(weekly_price)) %>% 
+    rename(neighb = neighbourhood_cleansed) %>% 
+    select(-starts_with("host_")) %>% 
+    select(id, name, neighb, 
+           ends_with("price"), 
+           starts_with("review_scores"), 
+           everything())
 
-#' Filter to best listings
 creme_de_la_creme = listings %>%
-    group_by(neighbourhood_cleansed) %>%
-    filter_at(
-        vars(starts_with("review_scores")), 
-        function(x) x > mean(x, na.rm = T)) %>%
-    ungroup() %>%
-    select(id, name, neighbourhood_cleansed, property_type,
-           accommodates, bedrooms, bathrooms, 
-           latitude, longitude) # Picking out some columns
+    group_by(neighb) %>%
+    filter_at(vars(starts_with("review_scores")), 
+              function(x) x > mean(x, na.rm = T)) %>%
+    ungroup()
 
-#' November/December data frames for rolling window availability
-nov_weekends = calendar %>%
-    filter(year(date) == 2019, 
-           month(date) == 11, 
-           weekdays(date) == "Friday") %>%
-    select(listing_id, date, minimum_nights, maximum_nights) %>%
-    semi_join(creme_de_la_creme, by = c("listing_id" = "id"))
+cdc_cal = calendar %>% 
+    semi_join(creme_de_la_creme, by = c("listing_id" = "id")) %>% 
+    mutate(price = parse_number(adjusted_price)) %>% 
+    select(-adjusted_price)
 
-novdec_cal = calendar %>% 
-    filter(year(date) == 2019, 
-           month(date) == 11 | month(date) == 12) %>%
-    select(listing_id, date, available, adjusted_price) %>%
-    semi_join(creme_de_la_creme, by = c("listing_id" = "id"))
 
-# Cross-joined version to use with function
-avail_long = nov_weekends %>%
-    inner_join(novdec_cal, by = "listing_id") %>%
-    rename(stay_start = date.x, stay_end = date.y) %>%
-    mutate(diff_days = as.numeric(difftime(stay_end, stay_start, units = "days")))
 
-# Function to get the base plotting data frame
-get_availability_table = function(ndays, npeople){
-    # Filter and summarise to get available listings and price per day for an ndays stay
-    avail = avail_long %>%
-        filter(diff_days >= 0,
-               diff_days < ndays, 
-               ndays >= minimum_nights, 
-               ndays <= maximum_nights) %>%
-        group_by(listing_id, stay_start) %>%
-        summarise(total_price = sum(adjusted_price), 
-                  available_all = all(available)) %>%
-        ungroup() %>%
-        filter(available_all) %>%
-        select(listing_id, stay_start, total_price) 
+get_availability_table = function(start_of_stay, n_days, n_people){
+    # Filter if a listing fits our stay:
+    fits_stay = cdc_cal %>% 
+        filter(date == start_of_stay) %>% 
+        filter(n_days >= minimum_nights, 
+               n_days <= maximum_nights)
     
-    # Join to creme de la creme, filter to those that accomodate more than npeople
-    # and calculate price per day per person
-    avail = avail %>%
-        inner_join(creme_de_la_creme, by = c("listing_id" = "id")) %>% 
-        filter(accommodates > npeople) %>% 
-        mutate(price_per_day_person = total_price / (ndays * npeople))
-        
+    # Filter candidates:
+    candidates = creme_de_la_creme %>%
+        filter(accommodates >= n_people) %>% 
+        semi_join(fits_stay, by = c("id" = "listing_id"))
+    
+    # Compute availability and daily rate for candidates:
+    prices = cdc_cal %>% 
+        semi_join(candidates, by = c("listing_id" = "id")) %>% 
+        filter(date >= start_of_stay, 
+               date <= start_of_stay + days(n_days - 1)) %>% 
+        group_by(listing_id) %>% 
+        summarise(available_n = all(available), 
+                  price_n = sum(price)) %>% 
+        filter(available_n) %>% 
+        transmute(id = listing_id, 
+                  price_per_day_person = round(price_n / (n_days * n_people)))
+    
+    avail = creme_de_la_creme %>% 
+        inner_join(prices, by = "id") %>% 
+        transmute(id, name, neighb, 
+                  price_per_day_person, accommodates, 
+                  longitude, latitude,
+                  rating = review_scores_rating)
     return(avail)
 }
-
-
-ndays = 4
-npeople = 4
-weekend_of = ymd(20191108)
-ndays = 4
-npeople = 4
-
-toplot = get_availability_table(ndays, npeople) %>%
-    filter(stay_start == weekend_of)
-
-    
-toplot %>% 
-    gather(type, number, accommodates, bedrooms, bathrooms) %>%
-    ggplot(aes(x=number)) +
-    geom_bar() + 
-    facet_grid(~type, scales = "free") + 
-    labs(x = "#", y = "number of listings")
-
-toplot %>% 
-    ggplot(aes(x = price_per_day_person)) + 
-    geom_histogram()
-
-boston_coords <- c(left   = -71.1289, 
-                   bottom = 42.3201, 
-                   right  = -71.0189, 
-                   top    = 42.3701)
-
-basemap <- get_map(location = boston_coords,
-                   maptype = 'terrain')
-
-ggmap(basemap) + 
-    geom_point(aes(x = longitude, y = latitude, col = price_per_day_person), 
-               data = toplot, 
-               size = 3)
-
