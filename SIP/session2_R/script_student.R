@@ -1,234 +1,79 @@
 #' -------------------------------------------------------------------------
-#' Advanced Tidyverse
-#' By Ted Papalexopoulos
+#' *Advanced Tidyverse*
+#' Instructors: Ted Papalexopoulos, Andy Zheng, Leonard Boussioux
+#' MBAn Software Tools - Fall 2021
 #' -------------------------------------------------------------------------
+#' In this session we will work towards building a bare-bones version
+#' of the AirBnB website, where we can explore prices and map listings 
+#' for a potential stay. 
+#' 
+#' This script will help us build the *server*-side functions that 
+#' manipulate data for shiny to use. As we build them up we will look 
+#' at advanced functionalities of dplyr and data merging. 
 
-#' In this session we will work towards building a bare-bones version of the 
-#' AirBnB website, where we can explore prices and map listings for a potential
-#' stay. This script will help us build the "server"-side functions that manipulate
-#' data for shiny to use. As we build them up we will look at advanced functionalities
-#' of dplyr and data merging. 
-#' 
-#' 
-#' Prior to running any code, you probably want to go to 
-#' Session > Set Working Directory > To Source File Location
-#' 
-#' Then make sure you set up the relative paths in the read_csv() calls below
-#' so that you are able to read in the two datasets. 
 
-#' Load libraries ----------------------------------------------------------
+#' -------------------------------------------------------------------------
+#' Load data and libraries
+#' -------------------------------------------------------------------------
+#' Prior to running any code, you probably want to:
+#' `Session > Set Working Directory > To Source File Location`
+#' 
+#' We'll be working with relatively large datafiles, which you will
+#' find in *data.zip* in this directory. Unzip them and make sure
+#' the relative paths work for `read_csv()` below. 
 
 library(tidyverse) #' includes dplyr, tidyr, ggplot2
 library(lubridate) #' for manipulating dates and times
 
-
 #' For the analysis we are going to do today, we need two data sets: 
-#' - The `listings` data set contains detailed information about each space.
+#' - The `listings` data set contains detailed information about each 
+#'   AirBnB listing. We particularly care about:
+#'       * property type
 #' - The `calendar` data set contains, for each listing, the availability
-#'   and total price per night over the next year. 
+#'   and price on each day over the next year. 
 
-listings = read_csv('../data/listings.csv')
-calendar = read_csv('../data/calendar.csv')
+listings = read_csv('data/listings_clean.csv')
+calendar = read_csv('data/calendar.csv')
 
-#' ----------------------------------------------
-#' RECAP
-#' ----------------------------------------------
+#' Let's take a look at each of these:
+View(listings)
+View(calendar)
+
+#' -------------------------------------------------------------------------
+#' RECAP & VARIABLE SELECTORS
+#' -------------------------------------------------------------------------
 #' Let's recall the main verbs of dplyr:
+#'   `select()` to select variables based on their names.
 #'   `filter()` to select rows based on their values.
 #'   `arrange()` to reorder rows.
-#'   `select()` and `rename()` to select variables based on their names.
 #'   `mutate()` to add new variables that are functions of existing variables.
 #'   `summarise()` to condense multiple values to a single value.
-
-#` Filter only listings that are "Downtown", and rating is above 80
-listings %>% 
-    filter(neighbourhood_cleansed == "Downtown", review_scores_rating > 80) %>%
-    glimpse
-
-
-#` Sorts the rows by descending rating
-listings %>% 
-    arrange(desc(review_scores_rating)) %>% 
-    glimpse
+#' 
+#' What makes these so powerful is the *chaining operator* `%>%`. Every
+#' verb takes a data.frame as input and gives a data.frame as output. 
+#' So we can sequentially program our steps.
 
 
-#' Creates a data frame with only the `name` and `review_score_rating` columns, and rename
-#' the latter to `rating`
+#' Let's start simple. `select()` picks certain columns. 
 listings %>% 
     select(id, review_scores_rating) %>% 
-    rename(rating = review_scores_rating) %>% 
-    glimpse
+    head
 
 
-#' Replaces NAs with 0 in the `review_score_rating`. Now `clean_rating` is
-#' a new column appended at the end of the data frame.
-listings %>%
-    mutate(clean_rating = ifelse(is.na(review_scores_rating), 0, review_scores_rating)) %>%
-    select(name, review_scores_rating, clean_rating)
-
-
-#' Calculates the total number of listings and their overall mean rating (`na.rm = T` will omit missing values)
-listings %>% summarise(n = n(), mean_rating = mean(review_scores_rating, na.rm = T)) 
-
-
-#' Bonus verb: `count(...)` will count the number of occurences of each combination of values
-listings %>% count(property_type, bedrooms)
-
-
-#' ----------------------------------------------
-#' GROUP_BY
-#' ----------------------------------------------
-#' The `group_by(...)` verb creates groups of observations that other verbs will adjust their behaviour to. 
-
-#' `group_by() %>% select()` will be the same but also keep the grouping variables
-listings %>% group_by(neighbourhood_cleansed) %>% select(review_scores_rating)
-
-
-#' `group_by() %>% summarise()` will perform aggregation within each group
+#' We can also remove columns by adding a `-` in `select()`:
 listings %>% 
-    group_by(neighbourhood_cleansed) %>% 
-    summarise(n = n(), mean_rating = mean(review_scores_rating, na.rm = T)) 
-    
+    select(-name, -host_name, -host_since, 
+           -host_response_time, -host_response_rate) %>% 
+    head
 
-#' `group_by() %>% arrange()` will be the same, UNLESS `.by_group=TRUE` in which case 
-#' it sorts by the groups first and only then by the columns you asked for
-listings %>% 
-    select(neighbourhood_cleansed, name, review_scores_rating) %>%  # for viewability
-    group_by(neighbourhood_cleansed) %>%
-    arrange(desc(review_scores_rating), .by_group = F) 
+#' The `tidyverse` offers a bunch of convenience *selector* functions
+#' to help you be lazy when selecting columns. This will also be 
+#' useful once we get to scoped verbs.
 
-#' `group_by() %>% mutate()` and `group_by() %>% filter()` are the most powerful, and what 
-#' we'll focus on the most.
-#' 
-#' The main difference is that any function you call will be called for each group *separately*. 
-#' The function should return either a single value, which will be appended as is to every row in the 
-#' group, or a vector of the same length as the number of observations.  
-#' 
-#' As a first example, let's add a column `delta_avg_rating` to every row that is the difference
-#' of the row's rating from the average rating in its neighborhood
-#' will be applied to each group separately. For example we can add a column mean_neighbourhood_rating
-#' which will be the mean rating in the row's group.
-listings %>%
-    group_by(neighbourhood_cleansed) %>%
-    mutate(
-        avg_neighb_rating = mean(review_scores_rating, na.rm = T),
-        delta_avg_rating = review_scores_rating - mean(review_scores_rating, na.rm = T)
-    ) %>% 
-    select(id, neighbourhood_cleansed, review_scores_rating, avg_neighb_rating, delta_avg_rating)
-
-
-#' The same is true of filter. Let's filter to those rows where the rating is above the neighborhood's 
-#' average rating: 
-listings %>% 
-    select(id, neighbourhood_cleansed, review_scores_rating) %>% 
-    group_by(neighbourhood_cleansed) %>%
-    mutate(avg_neighb_rating = mean(review_scores_rating, na.rm = T)) %>% 
-    filter(review_scores_rating > mean(review_scores_rating)) %>%
-    select(id, review_scores_rating, avg_neighb_rating)
-
-#' Oh no, there are no rows - why?!?!?!? Because we forgot to add `na.rm = T`. The result 
-#' of `mean(review_scores_rating)` was `NA` for all groups, so no rows were technically above the mean of `NA`. 
-#' *MORAL* `filter()` will automatically remove rows where the truth value is NA. This works instead:
-listings %>% 
-    select(id, neighbourhood_cleansed, review_scores_rating) %>% 
-    group_by(neighbourhood_cleansed) %>%
-    mutate(avg_neighb_rating = mean(review_scores_rating, na.rm = T)) %>% 
-    filter(review_scores_rating > mean(review_scores_rating, na.rm = T)) %>%
-    select(id, review_scores_rating, avg_neighb_rating)
-
-#' Grouped `filter` and `mutate` are especially useful when used with `ranking` or `window` functions. 
-#' For example, we can get the rank of each listing's rating within the neighbourhood:
-listings %>% 
-    select(id, neighbourhood_cleansed, review_scores_rating) %>% 
-    group_by(neighbourhood_cleansed) %>%
-    mutate(neighb_rank = min_rank(desc(review_scores_rating))) 
-
-
-#' Useful ranking functions.
-#'     `row_number()` which row is this in the group
-#'     `min_rank(column)` the rank of the observation within its group
-#'     `percent_rank(column)` the percentile rank of the observation within its group
-#'     `ntile(column, integer)` a rough rank, which buckets the observations into <integer> groups and 
-
-#' -----------------------------------------------------
-#' EXERCISE 1: Help, `min_rank()` can't break ties!
-#' -----------------------------------------------------
-#' Oh no! You've realized that there are many listings with a `review_scores_rating` of 100 in 
-#' each neighborhood, so there are many there's more than one rank == 1 everywhere: 
-listings %>% 
-    select(id, neighbourhood_cleansed, review_scores_rating) %>% 
-    group_by(neighbourhood_cleansed) %>%
-    mutate(neighb_rank = min_rank(desc(review_scores_rating))) %>%
-    arrange(neighb_rank)
-
-
-#' You decide you want to break ties by `review_scores_cleanliness`. Unfortunately, this does not work:
-listings %>% 
-    select(id, neighbourhood_cleansed, review_scores_rating, review_scores_cleanliness) %>% 
-    group_by(neighbourhood_cleansed) %>%
-    mutate(neighb_rank = min_rank(
-        desc(review_scores_rating), 
-        desc(review_scores_cleanliness)
-    ))
-
-
-#' Can you think of a way to get the listing's overall `review_scores_rating` rank within its 
-#' neighborhood, breaking ties by `review_scores_cleanliness`?
-#' Hint: you might want to think about `row_number()`
-
-#' ----------------------------------------------
-#' SOLUTION
-#' ----------------------------------------------
-
-listings %>% 
-    group_by(neighbourhood_cleansed) %>% 
-    arrange(desc(review_scores_rating), desc(review_scores_cleanliness)) %>% 
-    mutate(rank_in_neighb = row_number()) %>% 
-    filter(rank_in_neighb <= 3)
-
-
-
-
-
-#' ----------------------------------------------
-#' WARNING
-#' ----------------------------------------------
-#' When you `group_by() %>% mutate/filter`, any function you use will be called once for every group, 
-#' which creates a lot of overhead, especially if there are many groups. It is thus good practice
-#' to `ungroup()` after you're done with groups so that future `mutate/filter` calls will not feel
-#' the need to call functions more times than necessary (this is of course, only if you don't actually 
-#' need them to do so). 
-#' 
-#' Consider the following toy example which is especially bad because date manipulation is 
-#' computationally expensive: 
-
-d1 = calendar %>% 
-    group_by(listing_id) %>%
-    # ... do stuff ... %>%
-    filter(between(date, ymd(20191101), ymd(20191103)))
-
-d2 = calendar %>% 
-    group_by(listing_id) %>%
-    # ... do stuff ... %>%
-    ungroup() %>% 
-    filter(between(date, ymd(20191101), ymd(20191103)))
-
-#' Both commands create the same exact data frame, because the filter result does not change
-#' when you `group_by(listing_id)`. However `d1` took ~10 seconds to run, while `d2` was instantaneous. 
-#' This is because the former needed to call `between` for each of the 6264 listings while the latter
-#' used one big call. 
-
-
-#' ----------------------------------------------
-#' VARIABLE SELECTORS
-#' ----------------------------------------------
-#' The `tidyverse` offers a bunch of convenience functions to help you be lazy and avoid typing out
-#' column names, which can be very useful when working with many columns. 
-
-#' Suppose I want to look at all columns that are name `review_scores_<something>`. I could type 
-#' them all out...
+#' Suppose I want to look at all columns that are named
+#' `review_scores_<something>`. I could type them all out...
 listings %>% select(
-    name, 
+    id, 
     review_scores_rating,
     review_scores_accuracy, 
     review_scores_cleanliness, 
@@ -238,356 +83,701 @@ listings %>% select(
     review_scores_value
 )
 
-# Or I can use variable selectors to select columns based on their name:
-#    `starts_with`(string)
-#    `ends_with`(string)
-#    `contains`(string)
-#    `one_of`(many strings)
-#    `matches`(regex)
-#    `everything`()
-#    `last_col`(offset)
-
+#' Or I can use variable selectors to select columns based on their name:
+#'    `starts_with`(string)
+#'    `ends_with`(string)
+#'    `contains`(string)
+#'    `matches`(regex)
+#'    `everything`()
+#'    `last_col`(offset)
 
 #' So with much less typing, I can do the same as above...
-listings %>% select(name, starts_with("review_scores"))
+listings %>% select(id, starts_with("review_scores"))
 
 
-#' You can also tell `select` to pick all but a certain set of columns by adding a `-`:
-listings %>% select(-starts_with("host"))
+#' The `-` also works:
+listings %>% select(-starts_with("review_scores"))
 
 
-#' Often you want to rearrange the order of columns for easier viewing. You can combine
-#' selectors in any way: 
+#' Often you want to rearrange the order of columns for easier viewing.
+#' You can combine selectors in any way: 
 listings %>% 
-    select(id, neighbourhood_cleansed, 
-           starts_with("review_scores"), 
-           everything()) %>% View
+    select(id, 
+           neighbourhood_cleansed, 
+           starts_with("host_"), 
+           everything())
 
 
-#' Or suppose I want to move the last column that I just added with a mutate to the beginning:
+#' Let's move on to `mutate()`, which adds new columns. Let's
+#' create a `rating` as a percentage:
 listings %>% 
-    mutate(mean_rating = mean(review_scores_rating, na.rm = T)) %>%
-    select(id, last_col(), everything())
+    select(id, review_scores_rating) %>% 
+    mutate(rating = review_scores_rating / 100) %>% 
+    head
 
 
-#' ----------------------------------------------
+#' Bonus verb time! `transmute()` verb works like a combination of 
+#' `select()` and `mutate()`:
+listings %>% 
+    transmute(id, 
+              review_scores_rating,
+              rating = review_scores_rating / 100) %>% 
+    head
+
+
+#' Use `filter()` to select *Downtown* neighbourhood AND
+#' rating is `> 80`:
+listings %>% 
+    filter(neighbourhood_cleansed == "Downtown", 
+           review_scores_rating > 80) %>%
+    head
+
+#' Different arguments to `filter()` are an *intersection* (ALL
+#' things must be TRUE to keep the row). If we want a union, we 
+#' need the `|` (or) operator:
+listings %>% 
+    filter(neighbourhood_cleansed == "Downtown" | 
+           neighbourhood_cleansed == "Back Bay") %>% 
+    head
+
+
+#' The `%in%` operator is useful for this:
+c("Paul", "Ravi", "John") %in% c("John", "Paul", "Ringo", "George")
+
+
+#' So we could do the same as before with:
+listings %>% 
+    filter(neighbourhood_cleansed %in% c("Downtown", "Back Bay")) %>% 
+    head
+
+
+#' Now I want to point out a *very* common source of bugs. 
+#' `filter()` removes rows where the T/F evaluates to *NA*
+listings %>% select(id, weekly_price) %>% head
+listings %>% select(id, weekly_price) %>% head %>% 
+    filter(startsWith(weekly_price, "$")) 
+
+#' Note: `startsWith()` is for checking if a string starts with a 
+#' character, it's different than the `starts_with()` selector
+#' we saw earlier.
+
+
+#' Use `arrange()` to sort rows by rating, breaking ties by accuracy:
+listings %>% 
+    select(id, review_scores_rating, review_scores_accuracy) %>% 
+    arrange(review_scores_rating, review_scores_accuracy) %>% 
+    head
+
+
+#' If we want the reverse (descending) order, we can wrap the column
+#' name in `desc()`. First let's see what `desc()` does to a vector:
+desc(c(4, 7, 1, 3))
+
+
+#' So we can use `desc()` with any of the columns in `arrange()`:
+listings %>% 
+    select(id, review_scores_rating, review_scores_accuracy) %>% 
+    arrange(review_scores_rating, desc(review_scores_accuracy)) %>% 
+    head
+
+
+#' `summarise()` will compute aggregates over the entire data frame. 
+#' The aggregation should return *one* value for the entire data frame.
+listings %>% 
+    summarise(num_rows = n(), 
+              min_rating = min(review_scores_rating, na.rm = T),
+              mean_rating = mean(review_scores_rating, na.rm = T), 
+              max_rating = max(review_scores_rating, na.rm = T))
+
+
+#' Note the importance of `na.rm = T`: In R, aggregating functions
+#' (like min, mean, max) will by default return NA if any of the elements
+#' is NA.
+
+
+#' -------------------------------------------------------------------------
+#' EXERCISE 1: Warm-up
+#' -------------------------------------------------------------------------
+#' Let's do a basic data cleaning exercise. Process  a version
+#' of listings with:
+#'    1) Convert *weekly_price* to a number and rename it to *price*
+#'       Hint: What does `parse_number()` do?
+#'    2) Rename *neigbourhood_cleansed* to *neighb*.
+#'       Hint: What does `rename()` do?
+#'    3) Remove all of the columns that have to do with *host_...*
+#'    3) Order of columns should be: 
+#'          - id, name, neighb
+#'          - the two price columns
+#'          - all the review_scores columns
+#'          - everything else
+#' Reminder: typing `?<function>` into the console, brings up 
+#' documentation including usage examples (at the very end).
+
+# YOUR CODE HERE
+listings = listings %>% 
+    ...
+
+
+#' -------------------------------------------------------------------------
+#' END EXERCISE 1
+#' -------------------------------------------------------------------------
+
+
+#' -------------------------------------------------------------------------
+#' GROUP BY
+#' -------------------------------------------------------------------------
+#' The `group_by(...)` verb creates groups of observations.
+#' By itself, it does not doing anything to the data frame. 
+#' It just adds *meta-information*. Then other verbs will 
+#' adjust their behaviour accordingly. 
+
+listings %>% dim
+listings %>% group_by(neighb) %>% dim
+
+
+#' `group_by() %>% select()` is the same, but also keeps
+#'  the grouping variables...
+listings %>% 
+    group_by(neighb) %>% 
+    select(price)
+
+
+#' `group_by() %>% summarise()` will perform aggregation
+#' within each group:
+listings %>% 
+    group_by(neighb) %>% 
+    summarise(n = n(), 
+              mean_price = mean(price, na.rm = T)) 
+    
+
+#' You can specify multiple grouping columns:
+listings %>% 
+    group_by(neighb, room_type) %>% 
+    summarise(n = n())
+
+
+#' Bonus verb! `count` is short-hand for the above:
+listings %>% 
+    count(neighb, room_type)
+
+
+
+#' `group_by() %>% arrange()` will be the same, UNLESS `.by_group=TRUE`
+#' in which case rows are sorted *first* by the grouping columns
+#' and only then by what you asked for
+listings %>% 
+    select(id, neighb, price) %>%  
+    group_by(neighb) %>%
+    arrange(desc(price), .by_group = T) 
+
+
+
+#' `group_by() %>% mutate()` and `group_by() %>% filter()` are the 
+#' most powerful, and what we'll focus on the most.
+#' 
+#' If you get this, you get everything: with `mutate` and `filter`, 
+#' any operation/function on a column is done *separately* for each 
+#' group. Let me illustrate...
+
+#' Let's make a function to compute z-scores of a vector of numbers. 
+z_score = function(x) {
+    z = (x - mean(x, na.rm=T)) / sd(x, na.rm=T)
+    return(z)
+}
+z_score(c(2, 3, 4))
+
+
+#' Recall that z-scores are *how many sds above the mean* something
+#' is. It's therefore a measure of how much of an outlier a value is.
+#' What if I want the z-score of the price within it's neighbourhood?
+listings %>% 
+    mutate(z_global = z_score(price)) %>% 
+    group_by(neighb) %>% 
+    mutate(z_neighb = z_score(price)) %>% 
+    select(id, z_global, z_neighb) %>% 
+    head
+
+
+#' Note that the `mutate()` calls were exactly the same! 
+#' But in the first case, the input wasn't grouped. So z_score
+#' was called *once*, with the full column as input, and so 
+#' gave us the z-score based on *all* listings' mean and sd.
+#' 
+#' In the second case, we had grouped by neighbourhood. So 
+#' z_scores was called for each group *separately*. In each call,
+#' the function saw the subset of the data for that neighbourhood, 
+#' and so gave us the z-score based on that neighbourhood's listings.
+
+
+
+#' Now here's a cute trick. Suppose I want to add a column to
+#' *listings*, with the average price in its neighbourhood. I 
+#' could summarise the average price and then merge:
+listings %>% 
+    group_by(neighb) %>% 
+    summarise(mean_price = mean(price, na.rm=T))
+
+
+#' But I could do the same in one step with `group_by() %>% mutate()`!
+#' If the RHS of mutate returns *one* value (e.g. the mean), it will 
+#' be *recycled* for all elements.
+listings %>% 
+    group_by(neighb) %>% 
+    transmute(id, 
+              price, 
+              mean_price = mean(price, na.rm=T)) %>% 
+    head
+
+
+#' The same grouping logic works for `filter`. Each group
+#' is filtered separately. 
+listings %>% 
+    group_by(neighb) %>%
+    filter(price > mean(price)) %>% 
+    transmute(id, price)
+
+#' OH NO WHERE DID MY ROWS GO???? 
+
+
+
+#' I got you. Remember how `mean(vector)` horribly returns NA in R if 
+#' any element is NA? And how filter removes any rows where the T/F was 
+#' NA? Well, we forgot to add *na.rm=T* to our mean call...
+listings %>% 
+    group_by(neighb) %>%
+    filter(price > mean(price, na.rm=T)) %>% 
+    transmute(id, price)
+
+ 
+
+#' Here's another use-case for grouped mutate/filter: superlatives!
+#' The `min_rank()` function finds the ranking of each element in a vector:
+min_rank(c(7, 5, 7, 42))
+
+
+#' So let's use it to find the cheapest listing in each neighbourhood:
+listings %>% 
+    group_by(neighb) %>% 
+    filter(min_rank(price) == 1) %>% 
+    select(id, price, review_scores_rating) %>% 
+    head
+
+
+#' Mini-exercise: there is no `max_rank()` function.
+#' We've already seen a function today that can easily
+#' get us the *most* expensive listing. You only need 
+#' six extra characters in the line above...
+
+
+#' There are however other useful ranking functions.
+#'     `row_number()` which row is this in the group
+#'     `min_rank(column)` the rank of the observation 
+#'     `percent_rank(column)` the percentile rank 
+#'     `ntile(column, n)` a rough rank, which tells you which of *n* bins something is in
+
+
+#' -------------------------------------------------------------------------
+#' EXERCISE 2: Help, `min_rank()` can't break ties!
+#' -------------------------------------------------------------------------
+#' As you may have noticed. There are many cheapest listings 
+#' in Roslindale! Suppose I wanted break ties by rating. 
+#' Unfortunately, `min_rank(v1, v2)` doesn't work:
+listings %>% 
+    group_by(neighb) %>% 
+    filter(min_rank(price, review_scores_rating) == 1) 
+
+
+#' Can you think of some way of using `row_number()` to get the cheapest
+#' listing in a neighbourhood, that has the highest *review_scores_rating*?
+listings %>% 
+    ...
+
+
+#' -------------------------------------------------------------------------
+#' END EXERCISE 2
+#' -------------------------------------------------------------------------
+
+
+#' -------------------------------------------------------------------------
+#' WARNING
+#' -------------------------------------------------------------------------
+#' When you `group_by() %>% mutate/filter`, any function you use will
+#' be called once for every group. This creates a lot of overhead. 
+#' 
+#' The problem is that groups persist. If you do some grouped operation, 
+#' then any future `mutate/filter` calls will feel the need to work 
+#' on each group. And if they don't need to be grouped, this will make
+#' your code slower. 
+#' 
+#' Therefore it is prudent to always `ungroup()` after you're done.  
+#' Consider the following toy example which is especially bad because 
+#' date manipulation is computationally expensive: 
+
+d1 = calendar %>% 
+    group_by(listing_id) %>%
+    # ... do stuff ... %>%
+    filter(between(date, ymd("2019-11-01"), ymd("2019-11-03")))
+
+d2 = calendar %>% 
+    group_by(listing_id) %>%
+    # ... do stuff ... %>%
+    ungroup %>% 
+    filter(between(date, ymd("2019-11-01"), ymd("2019-11-03")))
+
+#' Both commands create the same exact data frame, because the filter
+#' result does not change when you `group_by(listing_id)`. However
+#'  `d1` took ~10 seconds to run, while `d2` was instantaneous.
+#'   
+#' This is because the former needed to call `between` for each of
+#' the 6264 listings while the latter used one big call. 
+
+
+
+#' -------------------------------------------------------------------------
+#' WORKING WITH LUBRIDATE
+#' -------------------------------------------------------------------------
+#' The `lubridate` package is very useful for working with
+#' dates, which we'll need for working with the calendar.
+
+
+#' There's very flexible functions to convert strings to dates:
+dates = c("2019-02-23", "21-12-2")
+dates = ymd(dates)
+class(dates)
+#' You can check other versions like `myd()`, `dmy_hms()` etc.
+
+
+#' Once something is converted to a date, you can easily extract
+#' different information:
+day(dates)
+week(dates)
+month(dates)
+year(dates)
+
+
+#' Or do math with the dates:
+dates + days(3)
+dates + months(2)
+
+
+#' One of my personal favorites is `floor_date()`\`ceiling_date()`:
+floor_date(dates, unit="years")
+ceiling_date(dates, unit="months")
+
+
+#' There's also nice formatting function to covert back to strings:
+format(dates, "%d %B %Y")
+?strptime  # documentation of formatting symbols
+
+
+#' While we're here, the `case_when()` functions is really useful
+#' for encoding *vectorized* if/elseif/else logic. 
+#' 
+#' case_when(predicate1 ~ value1, 
+#'           predicate2 ~ value2, 
+#'           ...
+#'           predicateN ~ valueN)
+#' Predicates should return T/F. The output will be a vector
+#' where the *i*th element is value<j>, if predicate<j> was the
+#' first TRUE predicate for the *i*'th element. In other words, 
+#' vectorized else-if.
+#' 
+#' For example, let's try to recreate the `days_in_month()` function:
+case_when(month(dates) == 2                ~ 28, 
+          month(dates) %in% c(4, 6, 9, 11) ~ 30, 
+          TRUE                             ~ 31)
+days_in_month(dates)
+
+
+#' Or if we want to build a nice formatting function with date suffixes:
+nice_format = function(dts) {
+    day_of_month = day(dts)
+    suffix = case_when(
+        day_of_month %in% c(11, 12, 13) ~ "th", 
+        day_of_month %% 10 == 1         ~ "st", 
+        day_of_month %% 10 == 2         ~ "nd", 
+        day_of_month %% 10 == 3         ~ "rd", 
+        TRUE                            ~ "th"
+    )
+    return(paste0(day_of_month, suffix))
+}
+nice_format(dates)
+
+
+#' -------------------------------------------------------------------------
 #' SCOPED VERBS: WORKING WITH MULTIPLE COLUMNS
-#' ----------------------------------------------
-#' Some of the most useful features of dplyr are the "scoped" versions of all the verbs¨
+#' -------------------------------------------------------------------------
+#' Some of the most useful features of dplyr are "scoped" 
+#' versions of all the verbs:
 #'     `<verb>_all`(function):            apply function to all columns
 #'     `<verb>_at`(variables, function):  apply function to variables selected as above. 
 #'     `<verb>_if`(predicate, function):  apply to all columns that pass some test
 
 
-#' Starting simple, let's find the mean of all `review_scores_xxx` columns by neighborhood.
-#' We select first select all the relevant columns, and `group_by %>% summarise_all` to apply 
-#' the mean function. 
+#' Let's start simple, let's find the mean of all `review_scores_xxx` 
+#' columns by neighborhood:
 listings %>%
-    group_by(neighbourhood_cleansed) %>%
-    select(starts_with("review_scores")) %>%    
-    summarise_all(ted)
-
-ted = function(x) mean(x, na.rm = T)
-#' Note that in all of the above cases, the function you want to apply must take only *one* argument, 
-#' the the vector of column values. You can also add additional arguments to pass to the function: 
-listings %>%
-    group_by(neighbourhood_cleansed) %>%
+    group_by(neighb) %>%
     select(starts_with("review_scores")) %>%      
-    summarise_all(mean, na.rm = T) %>% 
-    View
+    summarise_all(function(x) mean(x, na.rm = T))
 
 
-#' We can accomplish the same thing by using `summarise_at` without having to select out the 
-#' relevant variables beforehand. Note that for `_at`() functions you need to wrap variable 
-#' selectors in a `vars(...)` call. 
+#' Note that in all of the above cases, the function you want
+#' to apply must take only *one* argument. You can pass additional 
+#' arguments:
 listings %>%
-    group_by(neighbourhood_cleansed) %>% 
-    summarise_at(
-        vars(starts_with("review_scores")), 
-        ~mean(1 + .)
-    )
+    group_by(neighb) %>%
+    select(starts_with("review_")) %>%      
+    summarise_all(mean, na.rm = T)
 
-#' Alternatively, you can give `_at()` a vector of column names, if you don't have an easy 
-#' variable selector to use: 
+
+#' We can accomplish the same thing by using `summarise_at` without
+#' having to select out the relevant variables beforehand. Note that
+#' for `_at`() functions you need to wrap variable selectors in a `vars(...)`:
 listings %>%
-    group_by(neighbourhood_cleansed) %>% 
-    summarise_at(
-        c("review_scores_rating", "review_scores_cleanliness"), # Note that there is no vars() in this case
-        function(x) mean(x, na.rm=T)
-    )
+    group_by(neighb) %>% 
+    summarise_at(vars(starts_with("review_")), 
+                 mean, na.rm = T)
 
 
-#' Let's now use `mutate_at()` to clean the price columns like Phil did for us last time. 
-#' The `readr` has a wonderful function `parse_number()` that will take care of parsing the prices
-#' for us
-listings$price %>% parse_number() %>% head
+#' How about computing the percentage of `NA`'s in each review
+#' score column?
+listings %>% 
+    group_by(neighb) %>% 
+    summarise_at(vars(starts_with("review_")), 
+                 function(x) mean(is.na(x)))
+    
+    
 
-#' We can now simply apply this function to all columns that contain "price" in their name
-listings = listings %>% mutate_at(vars(contains("price")), parse_number)
-calendar = calendar %>% mutate_at(vars(contains("price")), parse_number)
+
+#' Let's now use `mutate_at()` to create neighbourhood specific 
+#' z-scores for *all* review score columns:
+listings %>% 
+    group_by(neighb) %>% 
+    mutate_at(vars(starts_with("review_")), z_score) %>% 
+    select(id, starts_with("review_"))
 
 
-#' Another common use case is to apply a function to every column of a particular data type. 
-#' `_if()` verbs are ideal for this: a *predicate* function, returning T/F is applied to each column to 
-#' each column to decide if the second function should be applied to that column: 
+
+#' Another common use case is to apply a function to every column 
+#' if it meets some condition. `_if()` verbs are ideal for this. 
+#' 
+#' Here the first argument is a *function* that is applied to the 
+#' column vector, and returns T/F if it is a column you want to 
+#' do whatever with. 
+
+
+# Let's select all columns where more than 50% of entries
+# are NA.
+listings %>% 
+    select_if(function(x) (mean(is.na(x)) > 0.5))
+
+
+
+#' Probably the most common use case here is applying to 
+#' all columns of a specific type:
 listings %>% 
     mutate_if(is.Date, function(x) format(x, "%d %B %Y")) %>%
-    select(name, last_scraped, host_since, calendar_last_scraped, first_review, last_review)
+    select(id, first_review, last_review)
 
 
-#' ----------------------------------------------
-#' EXERCISE 2: Scoped filter
-#' ----------------------------------------------
-#' You and your friends won the Sloan *Innovation Is Not a Buzzword If You're Doing It*
-#' entrepreneurship award, and have decided to spend the prize money on a long weekend
-#' at one of the best AirBnBs in Boston. You're not yet sure how many days you'll be staying
-#' or how many of you can make it, so you want to create an interactivee dashboard that 
-#' will tell you prices per night/person for some AirBnBs you like. 
+#' -------------------------------------------------------------------------
+#' EXERCISE 3: Let's boogie like I'm bougie.
+#' -------------------------------------------------------------------------
+#' I'm celebrating my thesis defense with some friends
+#' and I want to book an AirBnB that is above average 
+#' in ALL *review_score* columns. 
 #' 
-#' Your first task is to find a list of candidate listings that meet your friend group's 
-#' very stringent criteria. 
-#' 
-#' Use `filter_at()` to create a data frame of Boston's creme-de-la-creme of listings, i.e. 
-#' those whose score is above their neighborhood's average *for every* `review_scores_xxx`. 
-#' That is, the row should only be in the result if `review_scores_rating` is above its neighborhood's
-#' average `review_scores_rating` AND `review_scores_cleanliness` is above its neighborhood's 
-#' average `review_scores_rating` AND so forth and so fifth...
-#' 
-#' Name the result creme_de_la_creme. 
+#' Use `filter_at()` to do this. The first argument
+#' should be the set of columns you want to filter on. 
+#' The second argument should be a function that takes
+#' one of those columns, and returns a T/F vector of whether
+#' each element is satisfactory (i.e. is the listing above 
+#' average for that column?). `filter_at()` will then AND
+#' all of the T/F to keep the ones we want. 
+#'
 #' Hint: The result should have 1389 rows. 
-#' 
-#' ----------------------------------------------
-#' SOLUTION
-#' ----------------------------------------------
-creme_de_la_creme = listings %>% 
-    group_by(neighbourhood_cleansed) %>% 
-    filter_at(
-        vars(starts_with("review_scores")), 
-        function(x) x > mean(x, na.rm = T)
-    )
+
+creme_de_la_creme = listings %>%
+    ...
 
 
 
-#' ----------------------------------------------
-#' EXERCISE 3: Window functions
-#' ----------------------------------------------
-#' You've found your acceptable options, now you want to check their November availability 
-#' in the calendar. For now let's assume you'll be staying just for two nights starting on a
-#' Friday sometime in November. 
-#' 
-#' `lag()` and `lead()` are "window" functions that are particularly useful 
-#' with time series data like the calendar data frame. 
-#' 
-#' Play around with the following to see what they do:
-c(1,2,3,4,5) + lead(c(1,2,3,4,5), 2)
-lead(c(1,2,3,4,5), 2)
- 
-#' What you want from the calendar is, for every Friday in November, those `listing_id`s that are 
-#' `available` on both that Friday AND the following day. Furthermore, the `minimum_nights` should 
-#' be less than your planned 2 days, and the `maximum_nights` should be greater than  your planned 
-#' 2 days. Finally, the output should also have a column for the `total_price` of that stay. 
-#' 
-#' The result should be called `nov_avail` and should look like this: 
-#' listing_id    date           total_price
-#'      24240    2019-11-01             550     *24240 was available 11/01 and 11/02*
-#'      24240    2019-11-08             550     *24240 was available 11/08 and 11/09*
-#'       ...
-#' 
-#' 
-#' All you  need is a combination of arrange(), group_by(), mutate()/filter() and lead(). 
-#' Think: why is `arrange()` important when using lag/lead?
-#' 
-#' You may also find the following date functions useful: 
-weekdays(ymd("2019-01-01"))
-month(ymd("2019-01-01"), label=TRUE)
+#' -------------------------------------------------------------------------
+#' END EXERCISE 3
+#' -------------------------------------------------------------------------
 
-#' ----------------------------------------------
-#' SOLUTION
-#' ----------------------------------------------
+#' I've found my acceptable options, now I want to look 
+#' at the calendar to check their availability. 
+#' Let's go to the slides for a little lesson on joining 
+#' datasets. 
 
-avail  = calendar %>% 
+
+
+
+#' -------------------------------------------------------------------------
+#' JOINING
+#' -------------------------------------------------------------------------
+#' To finish up our server side functions, we need 
+#' a way of checking the *calendar* to see if a listing
+#' is available for the days and number of people we want, 
+#' and what the daily rate is.
+
+start_of_stay = ymd("2019-11-01")
+n_days = 3
+n_people = 4
+
+
+#' Here's what we need to do: 
+#'    1) Check that a listing *accomodates* enough people
+#'    2) Check that our stay is within *minimum_stay* and *maximum_stay*
+#'       requirements for our days.
+#'    3) Check if listing is *available* for all of the days.
+#'    4) Compute the total *adjusted_price*.
+#' We will do this step by step...
+
+
+#' First of all, let's slightly clean up the `calendar` data frame:
+#'   * We will be using the `adjusted_price` (after discounts), so 
+#'     let's convert that to a number. 
+#'   * Since the data frame is huge, and we will only ever
+#'     consider `creme_de_la_creme` listings, let's save some 
+#'     computation by *semi_joining* it them...
+
+cdc_cal = calendar %>% 
+    semi_join(creme_de_la_creme, by = c("listing_id" = "id")) %>% 
+    mutate(price = parse_number(adjusted_price)) %>% 
+    select(-adjusted_price)
+
+
+
+#' 1) Let's first start with all `creme_de_la_creme` listings as
+#'    our candidates, and filter out the ones that don't accommodate 
+#'    enough people:
+candidates = creme_de_la_creme %>% 
+    filter(accommodates >= n_people)
+
+
+#' 2) Now let's filter the *calendar* to those days where
+#'    our fit stays. 
+fits_stay = cdc_cal %>% 
+    filter(date == start_of_stay) %>% 
+    filter(n_days >= minimum_nights, 
+           n_days <= maximum_nights)
+
+candidates = candidates %>% 
+    semi_join(fits_stay, by = c("id" = "listing_id"))
+
+
+
+#' Now comes the interesting part. We want to compute 
+#' availability and price of each candidate over the period
+#' we're interested. Let's first look at a dumb way to do this, 
+#' mostly because we I want to introduce `lag()`/`lead()`.
+#' See if you can see what the following does...
+lag(1:7)
+lead(1:7, n=2)
+
+
+
+#' One way we could get whether each listing is available
+#' is the following:
+cdc_cal %>% 
+    semi_join(candidates, by = c("listing_id" = "id")) %>% 
     group_by(listing_id) %>% 
-    arrange(date) %>%
-    mutate(
-        total_price = adjusted_price + lead(adjusted_price, 1),
-        all_available = available & lead(available, 1)
-    ) %>% 
-    ungroup() %>%
-    filter(all_available) %>% 
-    select(listing_id, date, total_price)
+    mutate(available_3 = available & lead(available, 1) & lead(available, 2), 
+           price_3     = price     + lead(price, 1)     + lead(price, 2)    )
 
- 
 
-#' ----------------------------------------------
-#' CASE_WHEN
-#' ----------------------------------------------
-#' The `case_when()` function is very useful in mutate calls to encode if/elseif/else logic 
-#' in a vectorized manner. Let's illustrate by formatting the date column to look like "November 3rd"
+#' This way you can get availability & price of 3-day stay
+#' on any day! But of course, we had to hard-code 3 `lead`s, 
+#' so what if we wanted fewer or more days?
+
+
+#' Mini-exercise: why was `group_by(listing_id)` necessary here?
+#' Also did we assume anything about the rows of *cdc_cal*?
+
+
+
+#' -------------------------------------------------------------------------
+#' EXERCISE 4: Summarise, summarise, summarise.
+#' -------------------------------------------------------------------------
+#' Our goal is to create a dataframe that:
+#'    *  Has one row per listing in `candidates`
+#'    *  Column `available_n` is TRUE if listing was available
+#'       on *all* days between *start_of_stay* and 
+#'       *start_of_stay + days(n_days)*, 
+#'    *  Column `price_n` has the sum of prices for those days
 #' 
-#' day(date) will give you which day of the month (e.g. 8 or 29) a date is. Depending on what the day 
-#' of month is we want to add a suffix, e.g. "th" or "rd": 
+#' Fill in the following code to achieve this:
 
-avail %>%
-    mutate(day_of_month = day(date), 
-           suffix = case_when(
-               day_of_month %in% c(11, 12, 13) ~ "th", 
-               day_of_month %% 10 == 1         ~ "st", 
-               day_of_month %% 10 == 2         ~ "nd", 
-               day_of_month %% 10 == 3         ~ "rd", 
-               TRUE                            ~ "th"
-               ), 
-           weekend_of = paste("Weekend of the ", day_of_month, suffix, sep = "")
-    ) %>%
-    select(-day_of_month, -suffix)
+availability = cdc_cal %>% 
+    semi_join(candidates, by = c("listing_id" = "id")) %>% 
+    filter(...) %>% 
+    group_by(listing_id) %>% 
+    summarise(available_n = ..., 
+              price_n = ...)
+
+#' Hint:
+all(c(TRUE, TRUE, FALSE))
+all(c(TRUE, TRUE))
+
+#' -------------------------------------------------------------------------
+#' END EXERCISE 4
+#' -------------------------------------------------------------------------
+
+#' Now we can filter to the available ones, and compute the
+#' daily rate. 
+prices = availability %>% 
+    filter(available_n) %>% 
+    transmute(id = listing_id, 
+              price_per_day_person = price_n / (n_days * n_people))
 
 
-#' ----------------------------------------------
-#' JOINING DATASETS
-#' ----------------------------------------------
-#' We now want to merge our two tables so that we have all the information in one place: what 
-#' neighborhood the listing is in, how many it accomodates, what the prices will be etc. 
-#' 
-#' Let's go back to the slides to understand the different types of joins. 
+final_options = creme_de_la_creme %>% 
+    inner_join(prices, by = "id")
 
-#' And we're back... We can use a simple inner_join to get only the listings that are 
-#' creme-de-la-creme and are available on a weekend in November: 
-creme_de_la_creme = creme_de_la_creme %>% 
-    select(id, neighbourhood_cleansed, property_type,
-           accommodates, bedrooms, bathrooms, 
-           latitude, longitude) # Picking out some columns
 
-cdlc_nov = avail %>%
-    inner_join(creme_de_la_creme, by = c("listing_id" = "id"))
 
-#' ----------------------------------------------
-#' EXERCISE 4: More complicated joining
-#' ----------------------------------------------
-#' Ok so in the original problem statement, you weren't actually sure how long your stay would be, 
-#' yet we hard-coded the availability/pricing table to be only for two day stays. Recall that 
-#' we had to state `filter(available, lead(available, 1))` and `adjusted_price + lead(adjusted_price,1)`. 
-#' To do the same for a 3-day stay we would need to add `lead(available, 2)`, and so forth. 
-#' Is there a smart way to make the length of the stay an "input" without having to hard-code it?
-#' 
-#' Let's walk through the steps of how you could accomplish this with a simple join: 
-#' 
-#' 1) Let's start off by creating a data frame of every creme-de-la-creme listing and Friday 
-#' in November, and similar one for just the November/December calendar. The reason for this filtering
-#' will become obvious in a bit. 
-nov_weekends = calendar %>%
-    semi_join(creme_de_la_creme, by = c("listing_id" = "id")) %>% 
-    filter(year(date) == 2019, 
-           month(date) == 11, 
-           weekdays(date) == "Friday") %>%
-    select(listing_id, date, minimum_nights, maximum_nights)
+#' That's all! Now for any stay length, number of people and 
+#' start date, we can find the listings that match. Let's put all 
+#' of this into a function:
 
-novdec_cal = calendar %>% 
-    semi_join(creme_de_la_creme, by = c("listing_id" = "id")) %>% 
-    filter(year(date) == 2019, 
-           month(date) == 11 | month(date) == 12) %>%
-    select(listing_id, date, available, adjusted_price)
 
-#' 2) Now the trick: let's join the two on c("listing_id" = "listing_id"). 
-
-avail_long = nov_weekends %>%
-    left_join(novdec_cal, by = "listing_id") %>%
-    rename(stay_start = date.x, stay_end = date.y) %>%
-    mutate(diff_days = as.numeric(difftime(stay_end, stay_start, units = "days")))
-
-#' Work with your partner on answering the following questions: 
-#' - Can you interpret what the join did? 
-#' - How is row duplication working to our advantage here?
-#' - How many rows does each listing_id/stay_start combination have, and what
-#'   are the stay_end/adjusted_price/available columns capturing in those rows?
-#' - Harder question: why did we left join? Would some other type of join have worked equally well?
-#' 
-# ' I recommend looking at the table using View, and scrolling through a few hundred rows...
-avail_long %>%
-    arrange(listing_id, stay_start, stay_end) %>% 
-    View
+get_availability_table = function(start_of_stay, n_days, n_people){
+    # Filter if a listing fits our stay:
+    fits_stay = cdc_cal %>% 
+        filter(date == start_of_stay) %>% 
+        filter(n_days >= minimum_nights, 
+               n_days <= maximum_nights)
     
-
-#' 3) Now here's the exercise: use a combination of `filter()`, `group_by()`, `summarise()` and
-#' `filter` again to get the availability and price of all listings for an `ndays` long stay, where ndays is 
-#' a variable you can change the value of. 
-#' 
-#' The output should be called `avail` as before, but now a row should only be there if: 
-#'     - the listing was available for all `ndays` after the Friday
-#'     - `ndays` (the input variable) is between the minimum and maximum stay on that Friday
-#'     
-#' To get you started I've written (one of many possible) series of verb calls you can use
-#' to achieve this task. You'll need to fill in the actual commands.
-#' 
-#' For the `summarise` step you might want to check out what the following command does: 
-#' all(c(TRUE, TRUE, TRUE, FALSE))
-
-#' ----------------------------------------------
-#' SOLUTION
-#' ----------------------------------------------
-ndays = 4
-
-avail = avail_long %>%
-    filter() %>%
-    summarise() %>%
-    ungroup() %>% # Not necessary but good practice
-    filter() %>%
-    select() 
-
-
-
-#' ----------------------------------------------
-#' SYNTHESIS
-#' ----------------------------------------------
-#' Let's conclude the data wrangling session by setting up what we'll need for the visualization 
-#' component. 
-#' 
-#' The last thing you need to know to plan your stay is how many people will be partaking in the 
-#' festivities. There are some members of the team who are not sure they'll be able to make it
-#' on some of the weekends, so you want `npeople` to also be an input that you can tweak, and look
-#' at per person per day prices. 
-#' 
-#' So let's create a function that takes `ndays` and `npeople` as input and outputs a data frame
-#' that we can use to make plots of valid listings. 
-#' 
-#' Specifically, the function will use the joining technique to filter to those listings that are 
-#' fully available for an `ndays` stay (and meet the length of stay requirements). It will also 
-#' provide the total price for that stay. Then it will join the cdlc to add information on the 
-#' accomodations and computee per day/per person prices. 
-
-get_availability_table = function(ndays, npeople){
-    #' Filter and summarise `avail_long` to get available listings and total price
-    #' for an `ndays` stay.
-    avail = avail_long %>%
-        filter(diff_days >= 0,
-               diff_days < ndays, 
-               ndays >= minimum_nights, 
-               ndays <= maximum_nights) %>%
-        group_by(listing_id, stay_start) %>%
-        summarise(total_price = sum(adjusted_price), 
-                  available_all = all(available)) %>%
-        ungroup() %>%
-        filter(available_all) %>%
-        select(listing_id, stay_start, total_price) 
+    # Filter candidates:
+    candidates = creme_de_la_creme %>%
+        filter(accommodates >= n_people) %>% 
+        semi_join(fits_stay, by = c("id" = "listing_id"))
     
-    #' Join to creme_de_la_creme to get overall info, filter to those that accomodate more than `npeople`. 
-    #' Then calculate price per day per person. Recall that the join will also add columns like 
-    #' accomodates, long, lat etc.
-    avail = avail %>%
-        inner_join(creme_de_la_creme, by = c("listing_id" = "id")) %>% 
-        filter(accommodates > npeople) %>% 
-        mutate(price_per_day_person = total_price / (ndays * npeople))
-    
+    # Compute availability and daily rate for candidates:
+    prices = cdc_cal %>% 
+        semi_join(candidates, by = c("listing_id" = "id")) %>% 
+        filter(date >= start_of_stay, 
+               date <= start_of_stay + days(n_days - 1)) %>% 
+        group_by(listing_id) %>% 
+        summarise(available_n = all(available), 
+                  price_n = sum(price)) %>% 
+        filter(available_n) %>% 
+        transmute(id = listing_id, 
+                  price_per_day_person = price_n / (n_days * n_people))
+        
+    avail = creme_de_la_creme %>% 
+        inner_join(prices, by = "id") %>% 
+        transmute(id, name, neighb, 
+                  price_per_day_person, accommodates, 
+                  longitude, latitude,
+                  rating = review_scores_rating)
     return(avail)
 }
 
 # Let's check that this works:
-avail = get_availability_table(4, 4) %>% select(1:8, last_col(), everything())
-
-# And let's now make some histograms of prices. We'll filter to a specific 
-# weekend:
-
-avail %>%
-    filter(stay_start == ymd(20191101)) %>%
-    ggplot(aes(x = price_per_day_person)) + 
-    geom_histogram()
+avail = get_availability_table(ymd("20191101"), 3, 5) 
 
 # And with that, we have everything we need to build our bare-bones AirBnB app. 

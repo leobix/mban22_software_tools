@@ -1,6 +1,6 @@
 #' -------------------------------------------------------------------------
 #' *Advanced Tidyverse*
-#' Instructors: Ted Papalexopoulos, Andy Zheng
+#' Instructors: Ted Papalexopoulos, Andy Zheng, Leonard Boussioux
 #' MBAn Software Tools - Fall 2021
 #' -------------------------------------------------------------------------
 #' In this session we will work towards building a bare-bones version
@@ -30,7 +30,7 @@ library(lubridate) #' for manipulating dates and times
 #'   AirBnB listing. We particularly care about:
 #'       * property type
 #' - The `calendar` data set contains, for each listing, the availability
-#'   and total price per night over the next year. 
+#'   and price on each day over the next year. 
 
 listings = read_csv('data/listings_clean.csv')
 calendar = read_csv('data/calendar.csv')
@@ -39,9 +39,9 @@ calendar = read_csv('data/calendar.csv')
 View(listings)
 View(calendar)
 
-#' ----------------------------------------------
+#' -------------------------------------------------------------------------
 #' RECAP & VARIABLE SELECTORS
-#' ----------------------------------------------
+#' -------------------------------------------------------------------------
 #' Let's recall the main verbs of dplyr:
 #'   `select()` to select variables based on their names.
 #'   `filter()` to select rows based on their values.
@@ -62,7 +62,8 @@ listings %>%
 
 #' We can also remove columns by adding a `-` in `select()`:
 listings %>% 
-    select(-name, -host_name, -host_since, -host_response_time, -host_response_rate) %>% 
+    select(-name, -host_name, -host_since, 
+           -host_response_time, -host_response_rate) %>% 
     head
 
 #' The `tidyverse` offers a bunch of convenience *selector* functions
@@ -156,6 +157,10 @@ listings %>% select(id, weekly_price) %>% head
 listings %>% select(id, weekly_price) %>% head %>% 
     filter(startsWith(weekly_price, "$")) 
 
+#' Note: `startsWith()` is for checking if a string starts with a 
+#' character, it's different than the `starts_with()` selector
+#' we saw earlier.
+
 
 #' Use `arrange()` to sort rows by rating, breaking ties by accuracy:
 listings %>% 
@@ -165,7 +170,7 @@ listings %>%
 
 
 #' If we want the reverse (descending) order, we can wrap the column
-#' in `desc()`. First let's see what `desc()` does to a vector:
+#' name in `desc()`. First let's see what `desc()` does to a vector:
 desc(c(4, 7, 1, 3))
 
 
@@ -185,9 +190,14 @@ listings %>%
               max_rating = max(review_scores_rating, na.rm = T))
 
 
-#' -----------------------------------------------------
+#' Note the importance of `na.rm = T`: In R, aggregating functions
+#' (like min, mean, max) will by default return NA if any of the elements
+#' is NA.
+
+
+#' -------------------------------------------------------------------------
 #' EXERCISE 1: Warm-up
-#' -----------------------------------------------------
+#' -------------------------------------------------------------------------
 #' Let's do a basic data cleaning exercise. Process  a version
 #' of listings with:
 #'    1) Convert *weekly_price* to a number and rename it to *price*
@@ -212,14 +222,14 @@ listings = listings %>%
            everything())
 
 
-#' -----------------------------------------------------
+#' -------------------------------------------------------------------------
 #' END EXERCISE 1
-#' -----------------------------------------------------
+#' -------------------------------------------------------------------------
 
 
-#' ----------------------------------------------
-#' GROUP_BY
-#' ----------------------------------------------
+#' -------------------------------------------------------------------------
+#' GROUP BY
+#' -------------------------------------------------------------------------
 #' The `group_by(...)` verb creates groups of observations.
 #' By itself, it does not doing anything to the data frame. 
 #' It just adds *meta-information*. Then other verbs will 
@@ -370,9 +380,9 @@ listings %>%
 #'     `ntile(column, n)` a rough rank, which tells you which of *n* bins something is in
 
 
-#' -----------------------------------------------------
+#' -------------------------------------------------------------------------
 #' EXERCISE 2: Help, `min_rank()` can't break ties!
-#' -----------------------------------------------------
+#' -------------------------------------------------------------------------
 #' As you may have noticed. There are many cheapest listings 
 #' in Roslindale! Suppose I wanted break ties by rating. 
 #' Unfortunately, `min_rank(v1, v2)` doesn't work:
@@ -393,14 +403,14 @@ listings %>%
     head
 
 
-#' -----------------------------------------------------
+#' -------------------------------------------------------------------------
 #' END EXERCISE 2
-#' -----------------------------------------------------
+#' -------------------------------------------------------------------------
 
 
-#' ----------------------------------------------
+#' -------------------------------------------------------------------------
 #' WARNING
-#' ----------------------------------------------
+#' -------------------------------------------------------------------------
 #' When you `group_by() %>% mutate/filter`, any function you use will
 #' be called once for every group. This creates a lot of overhead. 
 #' 
@@ -433,9 +443,9 @@ d2 = calendar %>%
 
 
 
-#' ----------------------------------------------
+#' -------------------------------------------------------------------------
 #' WORKING WITH LUBRIDATE
-#' ----------------------------------------------
+#' -------------------------------------------------------------------------
 #' The `lubridate` package is very useful for working with
 #' dates, which we'll need for working with the calendar.
 
@@ -504,9 +514,9 @@ nice_format = function(dts) {
 nice_format(dates)
 
 
-#' ----------------------------------------------
+#' -------------------------------------------------------------------------
 #' SCOPED VERBS: WORKING WITH MULTIPLE COLUMNS
-#' ----------------------------------------------
+#' -------------------------------------------------------------------------
 #' Some of the most useful features of dplyr are "scoped" 
 #' versions of all the verbs:
 #'     `<verb>_all`(function):            apply function to all columns
@@ -581,9 +591,9 @@ listings %>%
     select(id, first_review, last_review)
 
 
-#' ----------------------------------------------
+#' -------------------------------------------------------------------------
 #' EXERCISE 3: Let's boogie like I'm bougie.
-#' ----------------------------------------------
+#' -------------------------------------------------------------------------
 #' I'm celebrating my thesis defense with some friends
 #' and I want to book an AirBnB that is above average 
 #' in ALL *review_score* columns. 
@@ -606,9 +616,9 @@ creme_de_la_creme = listings %>%
 
 
 
-#' -----------------------------------------------------
+#' -------------------------------------------------------------------------
 #' END EXERCISE 3
-#' -----------------------------------------------------
+#' -------------------------------------------------------------------------
 
 #' I've found my acceptable options, now I want to look 
 #' at the calendar to check their availability. 
@@ -618,9 +628,9 @@ creme_de_la_creme = listings %>%
 
 
 
-#' ----------------------------------------------
+#' -------------------------------------------------------------------------
 #' JOINING
-#' ----------------------------------------------
+#' -------------------------------------------------------------------------
 #' To finish up our server side functions, we need 
 #' a way of checking the *calendar* to see if a listing
 #' is available for the days and number of people we want, 
@@ -702,9 +712,9 @@ cdc_cal %>%
 
 
 
-#' ----------------------------------------------
+#' -------------------------------------------------------------------------
 #' EXERCISE 4: Summarise, summarise, summarise.
-#' ----------------------------------------------
+#' -------------------------------------------------------------------------
 #' Our goal is to create a dataframe that:
 #'    *  Has one row per listing in `candidates`
 #'    *  Column `available_n` is TRUE if listing was available
@@ -726,9 +736,9 @@ availability = cdc_cal %>%
 all(c(TRUE, TRUE, FALSE))
 all(c(TRUE, TRUE))
 
-#' -----------------------------------------------------
+#' -------------------------------------------------------------------------
 #' END EXERCISE 4
-#' -----------------------------------------------------
+#' -------------------------------------------------------------------------
 
 #' Now we can filter to the available ones, and compute the
 #' daily rate. 

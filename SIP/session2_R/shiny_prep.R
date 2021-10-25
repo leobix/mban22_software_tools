@@ -1,5 +1,5 @@
 
-#setwd("~/classes/mban_orientation/2_SIP/3_advanced_topics")
+#setwd("~/classes/mban22_software_tools/SIP/session2_R")
 
 library(tidyverse) #' includes dplyr, tidyr, ggplot2
 library(lubridate) #' for manipulating dates and times

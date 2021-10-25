@@ -20,7 +20,7 @@ ui <- fluidPage(
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
-            sliderInput("ndays", "Days", min=0, max=10, value=1, step=1),
+            sliderInput("ndays", "Days", min=1, max=10, value=1, step=1),
             sliderInput("npeople", "People", min=1, max=10, value=1, step=1),
             dateInput("start_of_stay", "Start of stay:", min=min(calendar $ date), 
                       max=max(calendar $ date), value=ymd(20191101))
