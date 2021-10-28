@@ -1,3 +1,5 @@
-# SIP Preassignment (October 25-29)
+# SIP Week (October 25-29)
 
-TBA
+The Tuesday session introduces the Machine Learning pipeline in Python.
+
+The Thursday session introduces advanced R tools.

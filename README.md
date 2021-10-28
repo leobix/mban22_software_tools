@@ -4,6 +4,7 @@ Welcome to 15.003! In this repository, you will find materials and additional re
 
 - The ```Orientation``` section covers an introduction to GitHub, Julia and R.
 - The ```intro_to_python``` section proposes warm-up content for students who are not familiar with Python.
+- The ```SIP``` section contains an Introduction to Machine Learning in Python and Advanced R modelling.
 
 Please reach out to us if you have any questions!
 
