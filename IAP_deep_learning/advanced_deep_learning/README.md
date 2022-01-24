@@ -1,21 +1,16 @@
-# # Lecture 4
+# 15.003 IAP: Advanced Deep Learning
 
-For this session we will work in  a Colab notebook. Follow this [link](https://colab.research.google.com/drive/1abnkCeDxtwQPqauK7XjxrI6ewZesPjzv?usp=sharing) to open the notebook. After that, please save a copy in your own drive so y ou can follow the class and make modificatios.
+This session is divided in 4 parts:
+- Part 1: Extended Notions on CNNs
+- Part 2: Tutorial on Transfer Learning for Computer Vision using Keras
+- Part 3: Sequential Tasks and Recurrent Neural Networks
+- Part 4: Advanced Deep Learning Concepts and Buzzwords
 
+For part 2, we will use a Google Colab notebook. Follow this [link](https://colab.research.google.com/drive/1oQo5IsO4C6xBb6EFoaoinmYqvj1pg62I?usp=sharing) to open the notebook. After that, please save a copy in your own drive so you can follow the class and make modifications.
+We suggest to run a few cells before hand to make sure the notebook compiles on your browser.
 
-
-# Preassignment 4
-
-As preassingment for session 4, we'll make sure we can open and execute a notebook in Google Colab.
-
-Google Colab is a user interface to execute Python code. It is extremely similar to Jupyter Notebook , except that it is online and runs on GPUs, for free!
-
-Please go to [this link](https://colab.research.google.com/drive/1rmKQP4JJH3RHD2k9vsYTeM_S5nj2fM4d?usp=sharing) link and make a copy of this repository to your Google drive. For that, please follow the instructions carefully.
-
-Then check you can execute cells as instructed, and upload a screenshot to Canvas of the requested cells.
-
-See you on Thursday!
+You can find the .pdf of the slides [here](https://www.dropbox.com/s/r9wr38xnrl0cfj8/Advanced%20Deep%20Learning%202022%20Public%20Version.pdf?dl=0).
 
 ### Questions?
 
-Please email me (Patricio)  at foncea@mit.edu for any questions about this session or the preassignment. 
+Please email Léonard at leobix@mit.edu for any questions about this session.
