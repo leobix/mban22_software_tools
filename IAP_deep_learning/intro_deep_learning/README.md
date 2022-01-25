@@ -1,9 +1,10 @@
 # 15.003 IAP: Introduction to Deep Learning
 
-This workshop is divided in 3 parts:
+This workshop is divided in 4 parts:
 - Part 1: Fundamentals of Deep Learning
-- Part 2: Fundamentals of Convolutional Neural Networks
-- Part 2: Neural Networks Tutorial in Python using Keras
+- Part 2: Introduction to Neural Networks in Python using Keras
+- Part 3: Fundamentals of Convolutional Neural Networks
+- Part 4: CNN Tutorial in Python using Keras
 
 We will use a Google Colab notebook. Follow this [link](https://colab.research.google.com/drive/1BNAPJtI4xYyWjVdLbOBvifao-84gx2o0?usp=sharing) to open the notebook. After that, please save a copy in your own drive so you can follow the class and make modifications.
 We suggest to run a few cells before hand to make sure the notebook compiles on your browser.
