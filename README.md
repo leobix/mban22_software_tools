@@ -1,4 +1,4 @@
-# MIT 15.003 | Analytics Tools
+# MIT 15.003 | Analytics Tools | 2021 - 2022
 
 Welcome to the repository of 15.003 Analytics Tools, an exciting class at MIT to learn how to use Python, Julia, and R! 
 You will find all materials and resources for the topics covered in the class. 
